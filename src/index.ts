@@ -1,5 +1,7 @@
 import fs from 'fs';
 import path from 'path';
+import { exist } from './unique-names';
+import * as child from 'child_process';
 
 namespace fnames {
     const enum extType {
@@ -16,7 +18,7 @@ namespace fnames {
         avi,     // '.avi' video
         mp4,     // '.mp4' video
         mkv,     // '.mkv' video
-    };
+    }
 
     type fileItem = {     // This is only file name wo/ path and extension, plus type of file extension.
         name: string;     // File name wo/ extension and path.
@@ -75,11 +77,18 @@ namespace fnames {
 
 namespace osStuff {
 
+    type fileItem = {
+        short: string;
+        btime: Date; // file created (birthtime) timestamp
+        mtime?: Date; // file data modified timestamp; present if different from btime
+        size: number;
+    }
+
     type folderItem = {
         name: string;           // Folder full name
-        files: string[];        // Short filenames i.e. wo/ path.
+        files: fileItem[];        // Short filenames i.e. wo/ path.
         subs: folderItem[];     // Sub-folders.
-    };
+    }
 
     function collectFiles(folder: string, rv: folderItem, recursive: boolean): void {
         rv.files.push(...fs.readdirSync(folder).map((_) => {
@@ -98,7 +107,13 @@ namespace osStuff {
                     }
                 }
             } else {
-                return _;
+                let newFile: fileItem = {
+                    short: _,
+                    btime: _st.birthtime,
+                    ...(_st.birthtime !== _st.mtime && {mtime: _st.mtime}),
+                    size: _st.size,
+                };
+                return newFile;
             }
         }).filter(Boolean));
     }
@@ -115,15 +130,64 @@ namespace osStuff {
     
 } //namespace osStuff
 
+function checkArg(targets: string[]) {
+    let rv = {
+        files: [],
+        dirs: [],
+    }
+    for (let target of targets) {
+        let current = path.resolve(target); // relative to the start up folder
+        let st = exist(current);
+        if (st) {
+            if (st.isDirectory()) {
+                rv.dirs.push(current);
+            } else if (st.isFile()) {
+                rv.files.push(current);
+            }
+        }
+    }
+    return rv;
+}
+
+function execCmdDir(folder: string, append: string = '>>') {
+    let comspec = process.env.comspec;
+    let todo = `dir /S "${folder}" ${append} "${path.join(folder, '1.txt')}"`;
+    let cmd = `${comspec} /c ${todo}`;
+    console.log('cmd', cmd);
+    child.execSync(cmd);
+}
+
+function execCmdTree(folder: string, append: string = '>>') {
+    let comspec = process.env.comspec;
+    let todo = `tree /A /F "${folder}" ${append} "${path.join(folder, '1.txt')}"`;
+    let cmd = `${comspec} /c ${todo}`;
+    console.log('cmd', cmd);
+    child.execSync(cmd);
+}
+
+function execCmdSeparator(folder: string, append: string = '>>') {
+    let comspec = process.env.comspec;
+    let todo = `echo ------------------- ${append} "${path.join(folder, '1.txt')}"`;
+    let cmd = `${comspec} /c ${todo}`;
+    console.log('cmd', cmd);
+    child.execSync(cmd);
+}
+
 function main() {
     let args = require('minimist')(process.argv.slice(2), {
     });
 
     console.log(`args ${JSON.stringify(args, null, 4)}`);
+
+    let targets = checkArg(args._ || []);
+    console.log(`targets ${JSON.stringify(targets, null, 4)}`);
+
+    execCmdTree(targets.dirs[0], '>');
+    execCmdSeparator(targets.dirs[0]);
+    execCmdDir(targets.dirs[0]);
     
-    let files = osStuff.getFiles(args._[0]);
-    
-    console.log(`files ${JSON.stringify(files, null, 4)}`);
+    // let files = osStuff.getFiles(args._[0] || []);
+    // console.log(`files ${JSON.stringify(files, null, 4)}`);
 }
 
 main();

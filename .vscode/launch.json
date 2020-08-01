@@ -16,7 +16,8 @@
                 "${workspaceFolder}/**/*.js"
             ],
             "args": [
-                "C:/Y/w/1-node/1-utils/rardir/test/1files"
+                "C:/Y/w/1-node/1-utils/rardir/test/1files",
+                "test/2folders",
             ]
         }
     ]
