@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import chalk from 'chalk';
 import { exist } from './unique-names';
 import * as child from 'child_process';
 
@@ -149,45 +150,58 @@ function checkArg(targets: string[]) {
     return rv;
 }
 
-function execCmdDir(folder: string, append: string = '>>') {
-    let comspec = process.env.comspec;
-    let todo = `dir /S "${folder}" ${append} "${path.join(folder, '1.txt')}"`;
-    let cmd = `${comspec} /c ${todo}`;
-    console.log('cmd', cmd);
-    child.execSync(cmd);
+function execCmdDir(folder: string) {
+    let comspec = process.env.comspec || 'cmd.exe';
+    let redirect = path.join(folder, 'zdirs_5.txt');
+     try {
+        child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`);
+        child.execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
+        child.execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
+    } catch (error) {
+        throw new Error(`Failed to create zdirs_5.txt file:\n${error.message}\n`);
+    }
 }
 
-function execCmdTree(folder: string, append: string = '>>') {
-    let comspec = process.env.comspec;
-    let todo = `tree /A /F "${folder}" ${append} "${path.join(folder, '1.txt')}"`;
-    let cmd = `${comspec} /c ${todo}`;
-    console.log('cmd', cmd);
+function createRarFile(rarFullname_: string, baseFolder_: string, shortfilenames_: string[]) {
+
+    if (!shortfilenames_.length) {
+        return;
+    }
+
+    let names = shortfilenames_.map(_ => `"${_}"`).join(' '); //TODO: Chack for duplicated names.
+    //let cmd = `winrar.exe m \"${rarFullname_}\" ${names}`;
+    let cmd = `start winrar.exe a \"${rarFullname_}\" ${names}`;
+    console.log(cmd);
+
     child.execSync(cmd);
+    
+    //if (!fnames::setCurrentDirectory(baseFolder_))
+    //bool isOK = localutils::createProcessAndComplete(cmdline);
 }
 
-function execCmdSeparator(folder: string, append: string = '>>') {
-    let comspec = process.env.comspec;
-    let todo = `echo ------------------- ${append} "${path.join(folder, '1.txt')}"`;
-    let cmd = `${comspec} /c ${todo}`;
-    console.log('cmd', cmd);
-    child.execSync(cmd);
-}
-
-function main() {
+async function main() {
     let args = require('minimist')(process.argv.slice(2), {
     });
 
     console.log(`args ${JSON.stringify(args, null, 4)}`);
 
-    let targets = checkArg(args._ || []);
-    console.log(`targets ${JSON.stringify(targets, null, 4)}`);
-
-    execCmdTree(targets.dirs[0], '>');
-    execCmdSeparator(targets.dirs[0]);
-    execCmdDir(targets.dirs[0]);
-    
-    // let files = osStuff.getFiles(args._[0] || []);
+    // let files = osStuff.getFiles(targetFolder);
     // console.log(`files ${JSON.stringify(files, null, 4)}`);
+
+    let targets = checkArg(args._ || []);
+    //console.log(`targets ${JSON.stringify(targets, null, 4)}`);
+
+    let targetFolder = targets.dirs[0];
+
+    //execCmdDir(targetFolder);
+
+    let files = osStuff.getFiles(args._[0] || []);
+    //console.log(`files ${JSON.stringify(files, null, 4)}`);
+
+    let rarName = path.join(files.name, 'tm.rar');
+    let rarFiles = files.files.map(_ => path.join(files.name, _.short));
+
+    createRarFile(rarName, '', rarFiles);
 }
 
-main();
+main().catch(error => console.log(chalk.red(`\n${error.message}\n`)));
