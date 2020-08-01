@@ -131,12 +131,51 @@ namespace osStuff {
     
 } //namespace osStuff
 
-function checkArg(targets: string[]) {
-    let rv = {
+function execCmdDir(folder: string) {
+    let comspec = process.env.comspec || 'cmd.exe';
+    let redirect = path.join(folder, 'zdirs_5.txt');
+     try {
+        child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`);
+        child.execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
+        child.execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
+    } catch (error) {
+        throw new Error(`Failed to create zdirs_5.txt file:\n${error.message}\n`);
+    }
+}
+
+function createRarFile(rarFullFname: string, baseFolderForShortNames: string, shortFnames: string[]) {
+    if (!shortFnames.length) {
+        throw new Error(`No files to move into ${rarFullFname}`);
+    }
+
+    let names = shortFnames.map(_ => `"${_}"`).join(' '); // We don't need to check for duplicated names here.
+    let cmd = `start winrar.exe m \"${rarFullFname}\" ${names}`;
+    try {
+        child.execSync(cmd, {cwd: baseFolderForShortNames});
+    } catch (error) {
+        throw new Error(`Failed to create ${rarFullFname}\n${error.message}\n`);
+    }
+}
+
+function handleFolder(targetFolder: any) {
+    execCmdDir(targetFolder);
+
+    let files = osStuff.getFiles(targetFolder);
+    console.log(`files ${JSON.stringify(files, null, 4)}`);
+
+    let rarRoot = files.name;
+    let rarName = path.join(rarRoot, 'tm.rar');
+    let rarFiles = files.files.map(_ => _.short);
+
+    createRarFile(rarName, rarRoot, rarFiles);
+}
+
+function checkArg(argTargets: string[]) {
+    let rv =  {
         files: [],
         dirs: [],
     }
-    for (let target of targets) {
+    for (let target of argTargets) {
         let current = path.resolve(target); // relative to the start up folder
         let st = exist(current);
         if (st) {
@@ -150,40 +189,23 @@ function checkArg(targets: string[]) {
     return rv;
 }
 
-function execCmdDir(folder: string) {
-    let comspec = process.env.comspec || 'cmd.exe';
-    let redirect = path.join(folder, 'zdirs_5.txt');
-     try {
-        child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`);
-        child.execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
-        child.execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
-    } catch (error) {
-        throw new Error(`Failed to create zdirs_5.txt file:\n${error.message}\n`);
-    }
-}
-
-function createRarFile(rarFullname_: string, baseFolder_: string, shortfilenames_: string[]) {
-
-    if (!shortfilenames_.length) {
-        return;
-    }
-
-    let names = shortfilenames_.map(_ => `"${_}"`).join(' '); //TODO: Chack for duplicated names.
-    //let cmd = `winrar.exe m \"${rarFullname_}\" ${names}`;
-    let cmd = `start winrar.exe a \"${rarFullname_}\" ${names}`;
-    console.log(cmd);
-
-    child.execSync(cmd);
+function pressToExit(exitCode: number = 0, msg: string = '\nPress any key ...') {
+    if (process.stdout.isTTY) {
+        console.log(msg);
     
-    //if (!fnames::setCurrentDirectory(baseFolder_))
-    //bool isOK = localutils::createProcessAndComplete(cmdline);
+        process.stdin.setRawMode(true);
+        process.stdin.resume();
+        process.stdin.on('data', process.exit.bind(process, exitCode));
+    } else {
+        process.exit(exitCode);
+    }
 }
 
 async function main() {
     let args = require('minimist')(process.argv.slice(2), {
     });
 
-    console.log(`args ${JSON.stringify(args, null, 4)}`);
+    //console.log(`args ${JSON.stringify(args, null, 4)}`);
 
     // let files = osStuff.getFiles(targetFolder);
     // console.log(`files ${JSON.stringify(files, null, 4)}`);
@@ -191,17 +213,24 @@ async function main() {
     let targets = checkArg(args._ || []);
     //console.log(`targets ${JSON.stringify(targets, null, 4)}`);
 
+    if (!targets.dirs.length && !targets.files.length) {
+        //throw new Error(`Specify at leats file/folder name`);
+
+        console.log(`Specify at leats file/folder name`);
+        pressToExit(1);
+    }
+
     let targetFolder = targets.dirs[0];
 
-    //execCmdDir(targetFolder);
+    if (!targetFolder) {
+        console.log(`Specify at leats file/folder name`);
+        pressToExit(1);
+    }
 
-    let files = osStuff.getFiles(args._[0] || []);
-    //console.log(`files ${JSON.stringify(files, null, 4)}`);
-
-    let rarName = path.join(files.name, 'tm.rar');
-    let rarFiles = files.files.map(_ => path.join(files.name, _.short));
-
-    createRarFile(rarName, '', rarFiles);
+    handleFolder(targetFolder);
 }
 
-main().catch(error => console.log(chalk.red(`\n${error.message}\n`)));
+main().catch(error => {
+    console.log(chalk.red(`\n${error.message}\n`));
+    pressToExit(1);
+});

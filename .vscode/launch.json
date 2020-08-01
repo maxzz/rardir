@@ -16,8 +16,8 @@
                 "${workspaceFolder}/**/*.js"
             ],
             "args": [
-                "C:/Y/w/1-node/1-utils/rardir/test/1files",
-                "test/2folders",
+                //"C:/Y/w/1-node/1-utils/rardir/test/1files",
+                //"test/2folders",
             ],
             //"console": "externalTerminal"
         }
