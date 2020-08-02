@@ -3,6 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import { exist } from './unique-names';
 import * as child from 'child_process';
+import { errorArgs, exitProcess, help } from './process-utils';
 
 namespace fnames {
     const enum extType {
@@ -184,59 +185,24 @@ function checkArg(argTargets: string[]) {
             } else if (st.isFile()) {
                 rv.files.push(current);
             }
+        } else {
+            throw errorArgs(`Target "${target}" does not exist.`);
         }
     }
-    return rv;
-}
 
-async function exitProcess(exitCode: number, msg: string): Promise<void> {
-    async function pressAnyKey(msg: string = '\nPress any key ...') {
-        return new Promise(resolve => {
-            if (process.stdin.isTTY) {
-                console.log(msg);
-            
-                process.stdin.setRawMode(true);
-                process.stdin.resume();
-                process.stdin.on('data', resolve);
-            } else {
-                resolve();
-            }
-        });
+    if (!rv.dirs.length && !rv.files.length) {
+        throw errorArgs(`Specify at leats file/folder name to process.`);
     }
 
-    console.log(msg);
-    await pressAnyKey();
-    process.exit(exitCode);
-}
-
-interface ErrorArgs extends Error {
-    args: boolean;
-}
-
-function errorArgs(msg: string): ErrorArgs {
-    let error = new Error(msg) as ErrorArgs;
-    error.args = true;
-    return error;
+    return rv;
 }
 
 async function main() {
     let args = require('minimist')(process.argv.slice(2), {
     });
-
     //console.log(`args ${JSON.stringify(args, null, 4)}`);
 
-    // let files = osStuff.getFiles(targetFolder);
-    // console.log(`files ${JSON.stringify(files, null, 4)}`);
-
     let targets = checkArg(args._ || []);
-    //console.log(`targets ${JSON.stringify(targets, null, 4)}`);
-
-    if (!targets.dirs.length && !targets.files.length) {
-        //throw new Error(`Specify at leats file/folder name`);
-        throw errorArgs('Need more');
-
-        await exitProcess(1, `Specify at leats file/folder name`);
-    }
 
     let targetFolder = targets.dirs[0];
 
@@ -248,6 +214,6 @@ async function main() {
 }
 
 main().catch(async (error) => {
-    let msg = chalk[error.args ? 'yellow' : 'red'](`\n${error.message}\n`);
-    await exitProcess(1, msg);
+    error.args && help();
+    await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
 });
