@@ -190,12 +190,12 @@ function checkArg(argTargets: string[]) {
 }
 
 function pressToExit(exitCode: number = 0, msg: string = '\nPress any key ...') {
-    if (process.stdout.isTTY) {
+    if (process.stdin.isTTY) {
         console.log(msg);
     
         process.stdin.setRawMode(true);
         process.stdin.resume();
-        process.stdin.on('data', process.exit.bind(process, exitCode));
+        process.stdin.on('data', process.exit.bind(process, exitCode)); // TODO: This does not stop execution.
     } else {
         process.exit(exitCode);
     }
