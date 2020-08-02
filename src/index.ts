@@ -209,6 +209,16 @@ async function exitProcess(exitCode: number, msg: string): Promise<void> {
     process.exit(exitCode);
 }
 
+interface ErrorArgs extends Error {
+    args: boolean;
+}
+
+function errorArgs(msg: string): ErrorArgs {
+    let error = new Error(msg) as ErrorArgs;
+    error.args = true;
+    return error;
+}
+
 async function main() {
     let args = require('minimist')(process.argv.slice(2), {
     });
@@ -223,6 +233,7 @@ async function main() {
 
     if (!targets.dirs.length && !targets.files.length) {
         //throw new Error(`Specify at leats file/folder name`);
+        throw errorArgs('Need more');
 
         await exitProcess(1, `Specify at leats file/folder name`);
     }
@@ -237,5 +248,6 @@ async function main() {
 }
 
 main().catch(async (error) => {
-    await exitProcess(1, chalk.red(`\n${error.message}\n`));
+    let msg = chalk[error.args ? 'yellow' : 'red'](`\n${error.message}\n`);
+    await exitProcess(1, msg);
 });
