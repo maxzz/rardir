@@ -189,16 +189,24 @@ function checkArg(argTargets: string[]) {
     return rv;
 }
 
-function pressToExit(exitCode: number = 0, msg: string = '\nPress any key ...') {
-    if (process.stdin.isTTY) {
-        console.log(msg);
-    
-        process.stdin.setRawMode(true);
-        process.stdin.resume();
-        process.stdin.on('data', process.exit.bind(process, exitCode)); // TODO: This does not stop execution.
-    } else {
-        process.exit(exitCode);
+async function exitProcess(exitCode: number, msg: string): Promise<void> {
+    async function pressAnyKey(msg: string = '\nPress any key ...') {
+        return new Promise(resolve => {
+            if (process.stdin.isTTY) {
+                console.log(msg);
+            
+                process.stdin.setRawMode(true);
+                process.stdin.resume();
+                process.stdin.on('data', resolve);
+            } else {
+                resolve();
+            }
+        });
     }
+
+    console.log(msg);
+    await pressAnyKey();
+    process.exit(exitCode);
 }
 
 async function main() {
@@ -216,21 +224,18 @@ async function main() {
     if (!targets.dirs.length && !targets.files.length) {
         //throw new Error(`Specify at leats file/folder name`);
 
-        console.log(`Specify at leats file/folder name`);
-        pressToExit(1);
+        await exitProcess(1, `Specify at leats file/folder name`);
     }
 
     let targetFolder = targets.dirs[0];
 
     if (!targetFolder) {
-        console.log(`Specify at leats file/folder name`);
-        pressToExit(1);
+        await exitProcess(1, `Specify at leats file/folder name`);
     }
 
     handleFolder(targetFolder);
 }
 
-main().catch(error => {
-    console.log(chalk.red(`\n${error.message}\n`));
-    pressToExit(1);
+main().catch(async (error) => {
+    await exitProcess(1, chalk.red(`\n${error.message}\n`));
 });
