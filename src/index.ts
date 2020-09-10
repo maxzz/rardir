@@ -6,7 +6,7 @@ import * as child from 'child_process';
 import { errorArgs, exitProcess, help } from './process-utils';
 
 namespace fnames {
-    const enum extType {
+    export const enum extType {
         unk,     // Not interested for us.
         empty,   // No file extension at all.
 
@@ -22,10 +22,10 @@ namespace fnames {
         mkv,     // '.mkv' video
     }
 
-    type fileItem = {     // This is only file name wo/ path and extension, plus type of file extension.
+    export type fileItem = { // This is only file name wo/ path and extension, plus type of file extension.
+        short: string;    // Original filename wo/ path.
         name: string;     // File name wo/ extension and path.
         ext: extType;     // File extension type of this file name.
-        idx: number;      // Unique index of this file inside fileItems container.
     }
 
     let fileItems: fileItem[] = [];
@@ -53,25 +53,23 @@ namespace fnames {
 
     export function parseFname(fname: string): fileItem {
         let rv: fileItem = {
+            short: fname,
             name: path.basename(fname),
             ext: castFileExtension(path.extname(fname)),
-            idx: 0,
         }
         return rv;
     }
 
-    export function getShrinkedFileName(fnameOnly_: string): string
-    {
-        // 0. Mozilla is replacing illegal file name characters with space, so we will remove all spaces for comparison.
+    export function getShrinkedFileName(fnameOnly: string): string {
+        // 0. Remove replced by Mozilla illigal characters from filename.
+        //    Mozilla is replacing illegal file name characters with space, so we will remove all spaces for comparison.
 
-        fnameOnly_ = fnameOnly_.trim();
-
-        if (!fnameOnly_)
-        {
-            return fnameOnly_;
+        fnameOnly = fnameOnly.trim();
+        if (!fnameOnly) {
+            return fnameOnly;
         }
 
-        let rv: string = fnameOnly_.replace(/[ _\.\\/()]/g, '');
+        let rv: string = fnameOnly.replace(/[ _\.\\/()]/g, '');
         return rv;
     }
 
@@ -79,16 +77,16 @@ namespace fnames {
 
 namespace osStuff {
 
-    type fileItem = {
-        short: string;
-        btime: Date; // file created (birthtime) timestamp
-        mtime?: Date; // file data modified timestamp; present if different from btime
-        size: number;
+    export type fileItem = {
+        short: string;          // filename wo/ path
+        btime: Date;            // file created (birthtime) timestamp
+        mtime?: Date;           // file data modified timestamp; present if different from btime
+        size: number;           // file size
     }
 
-    type folderItem = {
+    export type folderItem = {
         name: string;           // Folder full name
-        files: fileItem[];        // Short filenames i.e. wo/ path.
+        files: fileItem[];      // Short filenames i.e. wo/ path.
         subs: folderItem[];     // Sub-folders.
     }
 
@@ -120,7 +118,7 @@ namespace osStuff {
         }).filter(Boolean));
     }
 
-    export function getFiles(fname: string): folderItem {
+    export function getDirsAndFiles(fname: string): folderItem {
         let rv: folderItem = {
             name: fname,
             files: [],
@@ -132,43 +130,62 @@ namespace osStuff {
     
 } //namespace osStuff
 
-function execCmdDir(folder: string) {
-    let comspec = process.env.comspec || 'cmd.exe';
-    let redirect = path.join(folder, 'zdirs_5.txt');
-     try {
-        child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`);
-        child.execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
-        child.execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
-    } catch (error) {
-        throw new Error(`Failed to create zdirs_5.txt file:\n${error.message}\n`);
-    }
-}
+namespace appUtils {
+    export const fnameDirTxt = 'zdirs_5.txt';
 
-function createRarFile(rarFullFname: string, baseFolderForShortNames: string, shortFnames: string[]) {
-    if (!shortFnames.length) {
-        throw new Error(`No files to move into ${rarFullFname}`);
+    export function execCmdDir(folder: string) {
+        let comspec = process.env.comspec || 'cmd.exe';
+        let redirect = path.join(folder, fnameDirTxt);
+         try {
+            child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`);
+            child.execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
+            child.execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
+        } catch (error) {
+            throw new Error(`Failed to create ${fnameDirTxt} file:\n${error.message}\n`);
+        }
     }
-
-    let names = shortFnames.map(_ => `"${_}"`).join(' '); // We don't need to check for duplicated names here.
-    let cmd = `start winrar.exe m \"${rarFullFname}\" ${names}`;
-    try {
-        child.execSync(cmd, {cwd: baseFolderForShortNames});
-    } catch (error) {
-        throw new Error(`Failed to create ${rarFullFname}\n${error.message}\n`);
+    
+    export function createRarFile(rarFullFname: string, baseFolderForShortNames: string, shortFnames: string[]) {
+        if (!shortFnames.length) {
+            throw new Error(`No files to move into ${rarFullFname}`);
+        }
+    
+        let names = shortFnames.map(_ => `"${_}"`).join(' '); // We don't need to check for duplicated names here.
+        let cmd = `start winrar.exe m \"${rarFullFname}\" ${names}`;
+        try {
+            child.execSync(cmd, {cwd: baseFolderForShortNames});
+        } catch (error) {
+            throw new Error(`Failed to create ${rarFullFname}\n${error.message}\n`);
+        }
     }
-}
+} //namespace appUtils
 
 function handleFolder(targetFolder: any) {
-    execCmdDir(targetFolder);
-
-    let files = osStuff.getFiles(targetFolder);
+    // 1. Collect all file and folder items.
+    let files: osStuff.folderItem = osStuff.getDirsAndFiles(targetFolder);
     console.log(`files ${JSON.stringify(files, null, 4)}`);
 
-    let rarRoot = files.name;
-    let rarName = path.join(rarRoot, 'tm.rar');
-    let rarFiles = files.files.map(_ => _.short);
+    let ftypes: fnames.fileItem[] = files.files.map((_: osStuff.fileItem, idx: number) => fnames.parseFname(_.short));
 
-    createRarFile(rarName, rarRoot, rarFiles);
+    // Check for combination: url + mht + torrent + !tm.rar + !<media files>
+    let idxTmRar = ftypes.findIndex((_: fnames.fileItem) => _.short.toLowerCase() === 'tm.rar');
+    let idxTorrent = ftypes.findIndex((_: fnames.fileItem) => _.ext === fnames.extType.torrent);
+    let idxUrl = ftypes.findIndex((_: fnames.fileItem) => _.ext === fnames.extType.url);
+    let idxMht = ftypes.findIndex((_: fnames.fileItem) => _.ext === fnames.extType.mht);
+
+    // 2. Create dir.txt file.
+    appUtils.execCmdDir(targetFolder);
+
+    // 3. Move to rar top level files.
+    let rootDir2Rar = files.name;
+    let rarFname = path.join(rootDir2Rar, 'tm.rar');
+    let filesToRar = files.files.map(_ => _.short);
+    filesToRar.push(appUtils.fnameDirTxt);
+
+    //OK: 
+    appUtils.createRarFile(rarFname, rootDir2Rar, filesToRar);
+
+    // 4.
 }
 
 function checkArg(argTargets: string[]) {
@@ -214,6 +231,6 @@ async function main() {
 }
 
 main().catch(async (error) => {
-    error.args && help();
+    error.args && help(); // Show help if args are invalid
     await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
 });
