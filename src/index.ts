@@ -160,26 +160,41 @@ namespace appUtils {
     }
 } //namespace appUtils
 
-function handleFolder(targetFolder: any) {
+function handleFolder(targetFolder: any): void {
+    // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>
+
     // 1. Collect all file and folder items.
-    let files: osStuff.folderItem = osStuff.getDirsAndFiles(targetFolder);
-    console.log(`files ${JSON.stringify(files, null, 4)}`);
+    let filesAndFolders: osStuff.folderItem = osStuff.getDirsAndFiles(targetFolder);
+    console.log(`files ${JSON.stringify(filesAndFolders, null, 4)}`);
 
-    let ftypes: fnames.fileItem[] = files.files.map((_: osStuff.fileItem, idx: number) => fnames.parseFname(_.short));
+    // 2. Check that we don't have tm.rar already.
+    let hasTmRar = filesAndFolders.files.find((_: osStuff.fileItem) => _.short.toLowerCase() === 'tm.rar');
+    if (hasTmRar) {
+        //OK: return;
+    }
 
-    // Check for combination: url + mht + torrent + !tm.rar + !<media files>
-    let idxTmRar = ftypes.findIndex((_: fnames.fileItem) => _.short.toLowerCase() === 'tm.rar');
-    let idxTorrent = ftypes.findIndex((_: fnames.fileItem) => _.ext === fnames.extType.torrent);
-    let idxUrl = ftypes.findIndex((_: fnames.fileItem) => _.ext === fnames.extType.url);
-    let idxMht = ftypes.findIndex((_: fnames.fileItem) => _.ext === fnames.extType.mht);
+    // 3. Build .rar content
+    let ftypes: fnames.fileItem[] = filesAndFolders.files.map((_: osStuff.fileItem, idx: number) => fnames.parseFname(_.short));
+
+    // Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
+    let torrents = ftypes.filter((_: fnames.fileItem) => _.ext === fnames.extType.torrent);
+    let urls = ftypes.filter((_: fnames.fileItem) => _.ext === fnames.extType.url);
+    let mhts = ftypes.filter((_: fnames.fileItem) => _.ext === fnames.extType.mht);
+
+    let notOurFolder = !torrents.length || !urls.length;
+    if (notOurFolder) {
+        //OK: return;
+    }
+
+    
 
     // 2. Create dir.txt file.
     appUtils.execCmdDir(targetFolder);
 
     // 3. Move to rar top level files.
-    let rootDir2Rar = files.name;
+    let rootDir2Rar = filesAndFolders.name;
     let rarFname = path.join(rootDir2Rar, 'tm.rar');
-    let filesToRar = files.files.map(_ => _.short);
+    let filesToRar = filesAndFolders.files.map(_ => _.short);
     filesToRar.push(appUtils.fnameDirTxt);
 
     //OK: 
