@@ -1,4 +1,5 @@
 import fs from 'fs';
+import fsx from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import { exist } from './unique-names';
@@ -43,7 +44,7 @@ namespace fnames {
         ['.mkv',          extType.mkv],
     ]);
 
-    function castFileExtension(ext: string): extType {
+    export function castFileExtension(ext: string): extType {
         ext = ext.trim();
         if (ext === '.' || ext === '') {
             return extType.empty;
@@ -51,7 +52,7 @@ namespace fnames {
         return extTypes.get(ext.toLowerCase()) || extType.unk;
     }
 
-    export function parseFname(fname: string): fileItem {
+    function parseFname(fname: string): fileItem {
         let rv: fileItem = {
             short: fname,
             name: path.basename(fname),
@@ -60,7 +61,7 @@ namespace fnames {
         return rv;
     }
 
-    export function getShrinkedFileName(fnameOnly: string): string {
+    function getShrinkedFileName(fnameOnly: string): string {
         // 0. Remove replced by Mozilla illigal characters from filename.
         //    Mozilla is replacing illegal file name characters with space, so we will remove all spaces for comparison.
 
@@ -173,20 +174,32 @@ function handleFolder(targetFolder: any): void {
         //OK: return;
     }
 
+    type FItem = osStuff.fileItem & { ext: fnames.extType };
+
+    let fItems: FItem[] = filesAndFolders.files.map((_: osStuff.fileItem) => ({ ..._, ext: fnames.castFileExtension(path.extname(_.short)) }));
+
     // 3. Build .rar content
-    let ftypes: fnames.fileItem[] = filesAndFolders.files.map((_: osStuff.fileItem, idx: number) => fnames.parseFname(_.short));
 
     // Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
-    let torrents = ftypes.filter((_: fnames.fileItem) => _.ext === fnames.extType.torrent);
-    let urls = ftypes.filter((_: fnames.fileItem) => _.ext === fnames.extType.url);
-    let mhts = ftypes.filter((_: fnames.fileItem) => _.ext === fnames.extType.mht);
+    let torrents = fItems.filter((_: FItem) => _.ext === fnames.extType.torrent);
+    let urls = fItems.filter((_: FItem) => _.ext === fnames.extType.url);
+    let mhts = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
 
     let notOurFolder = !torrents.length || !urls.length;
     if (notOurFolder) {
         //OK: return;
     }
 
-    
+    // If we have a single folder then move it up
+    if (filesAndFolders.subs.length === 1) {
+        let folderFullname = filesAndFolders.subs[0].name;
+        let newName = path.dirname(folderFullname);
+        //fs.renameSync(folderFullname, newName);
+        //folderFullname = `${folderFullname}\\*`;
+        fsx.moveSync(folderFullname, newName);
+    }
+
+    // TODO: Filter out files more than 5MB (some mht are > 3MB)
 
     // 2. Create dir.txt file.
     appUtils.execCmdDir(targetFolder);
