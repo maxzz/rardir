@@ -1,5 +1,6 @@
 import fs from 'fs';
 import fsx from 'fs-extra';
+import mv from 'mv';
 import path from 'path';
 import chalk from 'chalk';
 import { exist } from './unique-names';
@@ -195,8 +196,13 @@ function handleFolder(targetFolder: any): void {
         let folderFullname = filesAndFolders.subs[0].name;
         let newName = path.dirname(folderFullname);
         //fs.renameSync(folderFullname, newName);
-        //folderFullname = `${folderFullname}\\*`;
-        fsx.moveSync(folderFullname, newName);
+
+        //folderFullname = `${folderFullname}\\*.*`;
+        //fsx.moveSync(folderFullname, newName);
+        fsx.moveSync(`C:/Y/w/1-node/1-utils/rardir/test/1files/sub/sub2sub/`, `C:/Y/w/1-node/1-utils/rardir/test/1files/sub2sub`);
+
+        //mv.moveSync(folderFullname, newName); <- no sync version
+
     }
 
     // TODO: Filter out files more than 5MB (some mht are > 3MB)
