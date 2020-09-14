@@ -1,12 +1,12 @@
 import fs from 'fs';
-import fsx from 'fs-extra';
-import mv from 'mv';
 import path from 'path';
 import chalk from 'chalk';
 import { exist } from './unique-names';
 import * as child from 'child_process';
+
+import { execSync } from 'child_process';
+
 import { errorArgs, exitProcess, help } from './process-utils';
-import { strict } from 'assert';
 
 namespace fnames {
     export const enum extType {
@@ -19,7 +19,8 @@ namespace fnames {
         url,     // '.url'
         mht,     // '.mht'
         pdf,     // '.pdf'
-        unPkg,   // '.unitypackage'
+        unity,   // '.unitypackage'
+        txt,     // '.txt'
         avi,     // '.avi' video
         mp4,     // '.mp4' video
         mkv,     // '.mkv' video
@@ -31,8 +32,6 @@ namespace fnames {
         ext: extType;     // File extension type of this file name.
     }
 
-    let fileItems: fileItem[] = [];
-
     let extTypes = new Map([
         ['.rar',          extType.rar],
         ['.zip',          extType.zip],
@@ -40,7 +39,8 @@ namespace fnames {
         ['.url',          extType.url],
         ['.mht',          extType.mht],
         ['.pdf',          extType.pdf],
-        ['.unitypackage', extType.unPkg],
+        ['.unitypackage', extType.unity],
+        ['.txt',          extType.txt],
         ['.avi',          extType.avi],
         ['.mp4',          extType.mp4],
         ['.mkv',          extType.mkv],
@@ -130,6 +130,36 @@ namespace osStuff {
         collectFiles(fname, rv, true);
         return rv;
     }
+
+    export function moveContentUp(subFolder: folderItem) {
+        let oldPath = subFolder.name;
+        let newPath = path.dirname(oldPath);
+
+        let files = subFolder.files.map((it: fileItem) => it.short);
+        let dirs = subFolder.subs.map((it: folderItem) => path.basename(it.name));
+        let move = [...files, ...dirs];
+
+        move.forEach((it: string) => {
+            try {
+                //fsx.moveSync(path.join(oldPath, it), path.join(newPath, it));
+                fs.renameSync(path.join(oldPath, it), path.join(newPath, it));
+            } catch (error) {
+                console.log(chalk.red(`Cannot move folder content up\n${path.join(oldPath, it)}\n${path.join(newPath, it)}`));
+                throw error;
+            }
+        });
+
+        //fsx.moveSync(`C:/Y/w/1-node/1-utils/rardir/test/1files/sub/sub2`, `C:/Y/w/1-node/1-utils/rardir/test/1files/sub2`);
+
+        //let newPath = path.dirname(oldPath);
+        //fs.renameSync(oldPath, newPath);
+
+        //oldPath = `${oldPath}\\*.*`;
+        //fsx.moveSync(oldPath, newPath);
+        //fsx.moveSync(`C:/Y/w/1-node/1-utils/rardir/test/1files/sub/sub2sub/`, `C:/Y/w/1-node/1-utils/rardir/test/1files/sub2sub`);
+
+        //mv.moveSync(oldPath, newPath); <- no sync version
+    }
     
 } //namespace osStuff
 
@@ -140,7 +170,10 @@ namespace appUtils {
         let comspec = process.env.comspec || 'cmd.exe';
         let redirect = path.join(folder, fnameDirTxt);
          try {
-            child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`);
+            child.execSync(`dir /s/o "C:/Y/w/1-node/1-utils/rardir/test/1files" > "text.txt"`);
+            //let out = child.execSync(`tree /a /f "${folder}"`, { cwd: folder }).toString();
+            //child.execSync(`tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
+            child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
             child.execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
             child.execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
         } catch (error) {
@@ -163,80 +196,68 @@ namespace appUtils {
     }
 } //namespace appUtils
 
-function handleFolder(targetFolder: any): void {
+function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>
 
-    // 1. Collect all file and folder items.
+    // 1. Get folders and files inside the target folder.
     let filesAndFolders: osStuff.folderItem = osStuff.getDirsAndFiles(targetFolder);
-    console.log(`files ${JSON.stringify(filesAndFolders, null, 4)}`);
+    //console.log(`files ${JSON.stringify(filesAndFolders, null, 4)}`);
 
     // 2. Check that we don't have tm.rar already.
     let hasTmRar = filesAndFolders.files.find((_: osStuff.fileItem) => _.short.toLowerCase() === 'tm.rar');
     if (hasTmRar) {
-        //OK: return;
+        return;
     }
 
+    // 3. Get what we have now inside this folder.
     type FItem = osStuff.fileItem & { ext: fnames.extType };
 
     let fItems: FItem[] = filesAndFolders.files.map((_: osStuff.fileItem) => ({ ..._, ext: fnames.castFileExtension(path.extname(_.short)) }));
 
-    // 3. Build .rar content
+    // 4. Build dirs.txt and .rar content.
 
-    // Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
-    let torrents = fItems.filter((_: FItem) => _.ext === fnames.extType.torrent);
-    let urls = fItems.filter((_: FItem) => _.ext === fnames.extType.url);
-    let mhts = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
+    // 4.1. Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
+    let torrents: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.torrent);
+    let urls: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.url);
+    let mhts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
+    let txts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.txt);
 
     let notOurFolder = !torrents.length || !urls.length;
     if (notOurFolder) {
-        //OK: return;
+        return;
     }
 
-    // If we have a single folder then move it up
-    if (filesAndFolders.subs.length === 1) { // and one tm.rar
-        let folderFullname = filesAndFolders.subs[0].name;
-        let newName = path.dirname(folderFullname);
-
-        let files = filesAndFolders.subs[0].files.map((it: osStuff.fileItem) => it.short);
-        let dirs = filesAndFolders.subs[0].subs.map((it: osStuff.folderItem) => path.basename(it.name));
-        let move = [...files, ...dirs];
-
-        move.forEach((it: string) => {
-            console.log('---\n', path.join(folderFullname, it), '\n', path.join(newName, it));
-            fsx.moveSync(path.join(folderFullname, it), path.join(newName, it));
-            //EPERM: operation not permitted, rename 'C:\Y\w\1-node\1-utils\rardir\test\1files\sub\sub2' -> 'C:\Y\w\1-node\1-utils\rardir\test\1files\sub2'
-        });
-
-        //fsx.moveSync(`C:/Y/w/1-node/1-utils/rardir/test/1files/sub/sub2`, `C:/Y/w/1-node/1-utils/rardir/test/1files/sub2`);
-
-
-        //let newName = path.dirname(folderFullname);
-        //fs.renameSync(folderFullname, newName);
-
-        //folderFullname = `${folderFullname}\\*.*`;
-        //fsx.moveSync(folderFullname, newName);
-        //fsx.moveSync(`C:/Y/w/1-node/1-utils/rardir/test/1files/sub/sub2sub/`, `C:/Y/w/1-node/1-utils/rardir/test/1files/sub2sub`);
-
-        //mv.moveSync(folderFullname, newName); <- no sync version
-
-    }
-
-    // TODO: Filter out files more than 5MB (some mht are > 3MB)
-
-    // 2. Create dir.txt file.
-    appUtils.execCmdDir(targetFolder);
-
-    // 3. Move to rar top level files.
+    // 4.2. Move to .rar top level files.
     let rootDir2Rar = filesAndFolders.name;
     let rarFname = path.join(rootDir2Rar, 'tm.rar');
-    let filesToRar = filesAndFolders.files.map(_ => _.short);
+
+    // TODO: Filter out files more than 5MB (some mht are > 3MB)
+    let filesToRar: string[] = [...torrents, ...urls, ...mhts, ...txts].map(_ => _.short);
+
+    // 4.3. Create dirs.txt and add to .rar collection.
+    appUtils.execCmdDir(targetFolder);
     filesToRar.push(appUtils.fnameDirTxt);
 
-    //OK: 
     appUtils.createRarFile(rarFname, rootDir2Rar, filesToRar);
 
-    // 4.
-}
+    // 5. We are done. Now, Get files again and if we have a single folder and one tm.rar then move content of sub-folder up.
+    let newContent: osStuff.folderItem = osStuff.getDirsAndFiles(targetFolder);
+
+    if (newContent.subs.length === 1 && newContent.files.length === 1) {
+        try {
+            osStuff.moveContentUp(newContent.subs[0]);
+
+            newContent = osStuff.getDirsAndFiles(newContent.subs[0].name);
+            if (!newContent.subs.length && !newContent.files.length) {
+                console.log(`delete -> ${newContent.subs[0].name}`);
+                //fs.unlink(oldPath, callback);
+                //rimraf(path_);
+            }
+        } catch (error) { // We reported error already and interrupt for loop, but moving folder up is just for convenience.
+            // TODO: Report that we had some problems after all.
+        }
+    }
+} //handleFolder()
 
 function checkArg(argTargets: string[]) {
     let rv =  {
@@ -280,7 +301,10 @@ async function main() {
     handleFolder(targetFolder);
 }
 
-main().catch(async (error) => {
-    error.args && help(); // Show help if args are invalid
-    await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
-});
+//child.execSync(`cmd /c dir "C:/Y/w/1-node/1-utils"`);
+execSync(`cmd /c dir "C:/Y/w/1-node/1-utils"`);
+
+// main().catch(async (error) => {
+//     error.args && help(); // Show help if args are invalid
+//     await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
+// });
