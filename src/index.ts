@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import { exist } from './unique-names';
 import * as child from 'child_process';
 import { errorArgs, exitProcess, help } from './process-utils';
+import { strict } from 'assert';
 
 namespace fnames {
     export const enum extType {
@@ -192,14 +193,29 @@ function handleFolder(targetFolder: any): void {
     }
 
     // If we have a single folder then move it up
-    if (filesAndFolders.subs.length === 1) {
+    if (filesAndFolders.subs.length === 1) { // and one tm.rar
         let folderFullname = filesAndFolders.subs[0].name;
         let newName = path.dirname(folderFullname);
+
+        let files = filesAndFolders.subs[0].files.map((it: osStuff.fileItem) => it.short);
+        let dirs = filesAndFolders.subs[0].subs.map((it: osStuff.folderItem) => path.basename(it.name));
+        let move = [...files, ...dirs];
+
+        move.forEach((it: string) => {
+            console.log('---\n', path.join(folderFullname, it), '\n', path.join(newName, it));
+            fsx.moveSync(path.join(folderFullname, it), path.join(newName, it));
+            //EPERM: operation not permitted, rename 'C:\Y\w\1-node\1-utils\rardir\test\1files\sub\sub2' -> 'C:\Y\w\1-node\1-utils\rardir\test\1files\sub2'
+        });
+
+        //fsx.moveSync(`C:/Y/w/1-node/1-utils/rardir/test/1files/sub/sub2`, `C:/Y/w/1-node/1-utils/rardir/test/1files/sub2`);
+
+
+        //let newName = path.dirname(folderFullname);
         //fs.renameSync(folderFullname, newName);
 
         //folderFullname = `${folderFullname}\\*.*`;
         //fsx.moveSync(folderFullname, newName);
-        fsx.moveSync(`C:/Y/w/1-node/1-utils/rardir/test/1files/sub/sub2sub/`, `C:/Y/w/1-node/1-utils/rardir/test/1files/sub2sub`);
+        //fsx.moveSync(`C:/Y/w/1-node/1-utils/rardir/test/1files/sub/sub2sub/`, `C:/Y/w/1-node/1-utils/rardir/test/1files/sub2sub`);
 
         //mv.moveSync(folderFullname, newName); <- no sync version
 
