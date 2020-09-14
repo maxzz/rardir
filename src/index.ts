@@ -3,10 +3,8 @@ import path from 'path';
 import chalk from 'chalk';
 import { exist } from './unique-names';
 import * as child from 'child_process';
-
-import { execSync } from 'child_process';
-
 import { errorArgs, exitProcess, help } from './process-utils';
+import rimraf from 'rimraf';
 
 namespace fnames {
     export const enum extType {
@@ -170,9 +168,6 @@ namespace appUtils {
         let comspec = process.env.comspec || 'cmd.exe';
         let redirect = path.join(folder, fnameDirTxt);
          try {
-            child.execSync(`dir /s/o "C:/Y/w/1-node/1-utils/rardir/test/1files" > "text.txt"`);
-            //let out = child.execSync(`tree /a /f "${folder}"`, { cwd: folder }).toString();
-            //child.execSync(`tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
             child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
             child.execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
             child.execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
@@ -242,6 +237,7 @@ function handleFolder(targetFolder: string): void {
 
     // 5. We are done. Now, Get files again and if we have a single folder and one tm.rar then move content of sub-folder up.
     let newContent: osStuff.folderItem = osStuff.getDirsAndFiles(targetFolder);
+    console.log(`newContent ${JSON.stringify(newContent, null, 4)}`);
 
     if (newContent.subs.length === 1 && newContent.files.length === 1) {
         try {
@@ -249,9 +245,8 @@ function handleFolder(targetFolder: string): void {
 
             newContent = osStuff.getDirsAndFiles(newContent.subs[0].name);
             if (!newContent.subs.length && !newContent.files.length) {
-                console.log(`delete -> ${newContent.subs[0].name}`);
-                //fs.unlink(oldPath, callback);
-                //rimraf(path_);
+                //console.log(`delete -> ${newContent.subs[0].name}`);
+                rimraf.sync(newContent.subs[0].name);
             }
         } catch (error) { // We reported error already and interrupt for loop, but moving folder up is just for convenience.
             // TODO: Report that we had some problems after all.
@@ -301,10 +296,7 @@ async function main() {
     handleFolder(targetFolder);
 }
 
-//child.execSync(`cmd /c dir "C:/Y/w/1-node/1-utils"`);
-execSync(`cmd /c dir "C:/Y/w/1-node/1-utils"`);
-
-// main().catch(async (error) => {
-//     error.args && help(); // Show help if args are invalid
-//     await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
-// });
+main().catch(async (error) => {
+    error.args && help(); // Show help if args are invalid
+    await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
+});
