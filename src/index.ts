@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import { exist } from './unique-names';
-import * as child from 'child_process';
+import { execSync } from 'child_process';
 import { errorArgs, exitProcess, help } from './process-utils';
 import rimraf from 'rimraf';
 
@@ -142,7 +142,8 @@ namespace osStuff {
                 //fsx.moveSync(path.join(oldPath, it), path.join(newPath, it));
                 fs.renameSync(path.join(oldPath, it), path.join(newPath, it));
             } catch (error) {
-                console.log(chalk.red(`Cannot move folder content up\n${path.join(oldPath, it)}\n${path.join(newPath, it)}`));
+                //message:'EPERM: operation not permitted, rename 'C:\\Y\\w\\1-node\\1-utils\\rardir\\test\\1files\\sub\\sub2' -> 'C:\\Y\\w\\1-node\\1-utils\\rardir\\test\\1files\\sub2''
+                console.log(chalk.red(`Cannot move folder content up\n${path.join(oldPath, it)}\n${path.join(newPath, it)}\n${error}`));
                 throw error;
             }
         });
@@ -168,9 +169,9 @@ namespace appUtils {
         let comspec = process.env.comspec || 'cmd.exe';
         let redirect = path.join(folder, fnameDirTxt);
          try {
-            child.execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
-            child.execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
-            child.execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
+            execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
+            execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
+            execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
         } catch (error) {
             throw new Error(`Failed to create ${fnameDirTxt} file:\n${error.message}\n`);
         }
@@ -182,9 +183,10 @@ namespace appUtils {
         }
     
         let names = shortFnames.map(_ => `"${_}"`).join(' '); // We don't need to check for duplicated names here.
-        let cmd = `start winrar.exe m \"${rarFullFname}\" ${names}`;
+        //let cmd = ` start winrar.exe m \"${rarFullFname}\" ${names}`; <- start will spawn new process and we receive closed handle start not winrar.
+        let cmd = `"C:\\Program Files\\WinRAR\\winrar.exe" m \"${rarFullFname}\" ${names}`;
         try {
-            child.execSync(cmd, {cwd: baseFolderForShortNames});
+            execSync(cmd, {cwd: baseFolderForShortNames});
         } catch (error) {
             throw new Error(`Failed to create ${rarFullFname}\n${error.message}\n`);
         }
@@ -235,7 +237,18 @@ function handleFolder(targetFolder: string): void {
 
     appUtils.createRarFile(rarFname, rootDir2Rar, filesToRar);
 
+    /**/
+    // TODO: I don't like that posibly huge files will be copied.
+    // TODO: execSync does not wait until rar is completed and files moved to rar.
+
     // 5. We are done. Now, Get files again and if we have a single folder and one tm.rar then move content of sub-folder up.
+    
+    // let dirSt = fs.statSync(targetFolder);
+    // fs.fsyncSync(dirSt.ino);
+
+    // let dirStat = fs.statSync(path.join(targetFolder, 'tm.rar'));
+    // console.log(`dirStat`, dirStat); //ENOENT: no such file or directory, stat 'C:\Y\w\1-node\1-utils\rardir\test\1files\tm.rar'
+
     let newContent: osStuff.folderItem = osStuff.getDirsAndFiles(targetFolder);
     console.log(`newContent ${JSON.stringify(newContent, null, 4)}`);
 
@@ -252,6 +265,7 @@ function handleFolder(targetFolder: string): void {
             // TODO: Report that we had some problems after all.
         }
     }
+    /**/
 } //handleFolder()
 
 function checkArg(argTargets: string[]) {
