@@ -176,6 +176,8 @@ namespace appUtils {
             throw new Error(`Failed to create ${fnameDirTxt} file:\n${error.message}\n`);
         }
     }
+
+    let WINRAR: string;
     
     export function createRarFile(rarFullFname: string, baseFolderForShortNames: string, shortFnames: string[]) {
         if (!shortFnames.length) {
@@ -184,13 +186,22 @@ namespace appUtils {
     
         let names = shortFnames.map(_ => `"${_}"`).join(' '); // We don't need to check for duplicated names here.
         //let cmd = ` start winrar.exe m \"${rarFullFname}\" ${names}`; <- start will spawn new process and we receive closed handle start not winrar.
-        let cmd = `"C:\\Program Files\\WinRAR\\winrar.exe" m \"${rarFullFname}\" ${names}`;
+        let cmd = `"${WINRAR}" m \"${rarFullFname}\" ${names}`;
         try {
             execSync(cmd, {cwd: baseFolderForShortNames});
         } catch (error) {
             throw new Error(`Failed to create ${rarFullFname}\n${error.message}\n`);
         }
     }
+
+    export function findWinrar() {
+        try {
+            WINRAR = execSync(`where winrar`).toString().split(/[\r\n]/)[0];
+        } catch (error) {
+            throw new Error(`${error}\nMake path to winrar.exe as part of PATH`);
+        }
+    }
+    
 } //namespace appUtils
 
 function handleFolder(targetFolder: string): void {
@@ -299,8 +310,7 @@ function checkArg(argTargets: string[]) {
 }
 
 async function main() {
-    getWinrar();
-    return;
+    appUtils.findWinrar();
 
     let args = require('minimist')(process.argv.slice(2), {
     });
@@ -321,22 +331,3 @@ main().catch(async (error) => {
     error.args && help(); // Show help if args are invalid
     await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
 });
-
-function getWinrar() {
-    try {
-        let comspec = process.env.comspec || 'cmd.exe';
-        //var winrar = execSync(`${comspec} /c where /?`).toString();
-        //var winrar = execSync(`where.exe /?`).toString(); //OK
-        var winrar = execSync(`where.exe winrar.exe`).toString();
-        //var winrar = execSync(`${comspec} /c where.exe winrar.exe`).toString();
-        //var winrar = execSync(`dir`).toString();
-    } catch (error) {
-        console.log(`err res: "${winrar}" --\n "${error}"`);
-    }
-
-    if (winrar && winrar.match(/Could not find/)) {
-        console.log(`res2: "${winrar}"`);
-    }
-    console.log(`OK: "${winrar}"`);
-}
-
