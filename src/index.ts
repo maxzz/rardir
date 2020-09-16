@@ -129,9 +129,9 @@ namespace osStuff {
         return rv;
     }
 
-    export function moveContentUp(subFolder: folderItem) {
+    export function moveContentUp(subFolder: folderItem): void {
         let oldPath = subFolder.name;
-        let newPath = path.dirname(oldPath);
+        let newPath = path.dirname(oldPath); // remove last name
 
         let files = subFolder.files.map((it: fileItem) => it.short);
         let dirs = subFolder.subs.map((it: folderItem) => path.basename(it.name));
@@ -250,16 +250,20 @@ function handleFolder(targetFolder: string): void {
     // console.log(`dirStat`, dirStat); //ENOENT: no such file or directory, stat 'C:\Y\w\1-node\1-utils\rardir\test\1files\tm.rar'
 
     let newContent: osStuff.folderItem = osStuff.getDirsAndFiles(targetFolder);
-    console.log(`newContent ${JSON.stringify(newContent, null, 4)}`);
+    //console.log(`newContent ${JSON.stringify(newContent, null, 4)}`);
 
-    if (newContent.subs.length === 1 && newContent.files.length === 1) {
+    if (newContent.subs.length === 1 && newContent.files.length === 1) { // we should have one sub-folder and one tm.rar
         try {
-            osStuff.moveContentUp(newContent.subs[0]);
+            // Check that newContent does not have items from newContent.subs[0]
 
-            newContent = osStuff.getDirsAndFiles(newContent.subs[0].name);
+            osStuff.moveContentUp(newContent.subs[0]);
+            
+            let dirToRemove = newContent.subs[0].name;
+
+            newContent = osStuff.getDirsAndFiles(dirToRemove);
             if (!newContent.subs.length && !newContent.files.length) {
-                //console.log(`delete -> ${newContent.subs[0].name}`);
-                rimraf.sync(newContent.subs[0].name);
+                //console.log(`delete -> ${dirToRemove}`);
+                rimraf.sync(dirToRemove);
             }
         } catch (error) { // We reported error already and interrupt for loop, but moving folder up is just for convenience.
             // TODO: Report that we had some problems after all.
@@ -295,6 +299,9 @@ function checkArg(argTargets: string[]) {
 }
 
 async function main() {
+    getWinrar();
+    return;
+
     let args = require('minimist')(process.argv.slice(2), {
     });
     //console.log(`args ${JSON.stringify(args, null, 4)}`);
@@ -314,3 +321,22 @@ main().catch(async (error) => {
     error.args && help(); // Show help if args are invalid
     await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
 });
+
+function getWinrar() {
+    try {
+        let comspec = process.env.comspec || 'cmd.exe';
+        //var winrar = execSync(`${comspec} /c where /?`).toString();
+        //var winrar = execSync(`where.exe /?`).toString(); //OK
+        var winrar = execSync(`where.exe winrar.exe`).toString();
+        //var winrar = execSync(`${comspec} /c where.exe winrar.exe`).toString();
+        //var winrar = execSync(`dir`).toString();
+    } catch (error) {
+        console.log(`err res: "${winrar}" --\n "${error}"`);
+    }
+
+    if (winrar && winrar.match(/Could not find/)) {
+        console.log(`res2: "${winrar}"`);
+    }
+    console.log(`OK: "${winrar}"`);
+}
+
