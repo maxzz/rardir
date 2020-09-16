@@ -14,7 +14,7 @@ namespace fnames {
 
         rar,     // '.rar'
         zip,     // '.zip'
-        torrent, // '.torrent'
+        tor,     // '.torrent'
         url,     // '.url'
         mht,     // '.mht'
         pdf,     // '.pdf'
@@ -26,15 +26,15 @@ namespace fnames {
     }
 
     export type fileItem = { // This is only file name wo/ path and extension, plus type of file extension.
-        short: string;    // Original filename wo/ path.
-        name: string;     // File name wo/ extension and path.
-        ext: extType;     // File extension type of this file name.
+        short: string;      // Original filename wo/ path.
+        name: string;       // File name wo/ extension and path.
+        ext: extType;       // File extension type of this file name.
     }
 
     let extTypes = new Map([
         ['.rar',          extType.rar],
         ['.zip',          extType.zip],
-        ['.torrent',      extType.torrent],
+        ['.torrent',      extType.tor],
         ['.url',          extType.url],
         ['.mht',          extType.mht],
         ['.pdf',          extType.pdf],
@@ -57,16 +57,16 @@ namespace fnames {
 namespace osStuff {
 
     export type fileItem = {
-        short: string;          // filename wo/ path
-        btime: Date;            // file created (birthtime) timestamp
-        mtime?: Date;           // file data modified timestamp; present if different from btime
-        size: number;           // file size
+        short: string;      // filename wo/ path
+        btime: Date;        // file created (birthtime) timestamp
+        mtime?: Date;       // file data modified timestamp; present if different from btime
+        size: number;       // file size
     }
 
     export type folderItem = {
-        name: string;           // Folder full name
-        files: fileItem[];      // Short filenames i.e. wo/ path.
-        subs: folderItem[];     // Sub-folders.
+        name: string;       // Folder full name
+        files: fileItem[];  // Short filenames i.e. wo/ path.
+        subs: folderItem[]; // Sub-folders.
     }
 
     function collectFiles(dir: string, rv: folderItem, recursive: boolean): void {
@@ -144,18 +144,18 @@ namespace osStuff {
 } //namespace osStuff
 
 namespace appUtils {
-    export const fnameDirTxt = 'z_dirs.txt';
+    export const fnameDirsTxt = 'z_dirs.txt';
 
     export function execCmdDir(folder: string) {
         let comspec = process.env.comspec || 'cmd.exe';
-        let redirect = path.join(folder, fnameDirTxt);
+        let redirect = path.join(folder, fnameDirsTxt);
          try {
             execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
             execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
             execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
             execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
         } catch (error) {
-            throw new Error(`Failed to create ${fnameDirTxt} file:\n${error.message}\n`);
+            throw new Error(`Failed to create ${fnameDirsTxt} file:\n${error.message}\n`);
         }
     }
 
@@ -205,7 +205,7 @@ function handleFolder(targetFolder: string): void {
     // 4. Build dirs.txt, .rar content, and move single folder content up.
 
     // 4.1. Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
-    let torrents: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.torrent);
+    let torrents: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.tor);
     let urls: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.url);
     let mhts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
     let txts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.txt);
@@ -219,11 +219,12 @@ function handleFolder(targetFolder: string): void {
     let rootDir2Rar = filesAndFolders.name;
     let fullNameRar = path.join(rootDir2Rar, 'tm.rar');
 
-    let filesToRar: string[] = [...torrents, ...urls, ...mhts, ...txts].map(_ => _.short); // TODO: Filter out files more than 5MB (some mht are > 3MB)
+    let smallFiles = [...torrents, ...urls, ...mhts, ...txts].filter((_: FItem) => _.size < 5000000); // Filter out files more than 5MB (some mht are > 5MB)
+    let filesToRar: string[] = smallFiles.map(_ => _.short);
 
     // 4.3. Create dirs.txt and add to .rar collection.
     appUtils.execCmdDir(targetFolder);
-    filesToRar.push(appUtils.fnameDirTxt);
+    filesToRar.push(appUtils.fnameDirsTxt);
 
     appUtils.createRarFile(fullNameRar, rootDir2Rar, filesToRar);
 
