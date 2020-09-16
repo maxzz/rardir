@@ -291,15 +291,13 @@ function handleFolder(targetFolder: string): void {
             osStuff.moveContentUp(newContent.subs[0]);
             
             let dirToRemove = newContent.subs[0].name;
-            newContent = osStuff.getDirsAndFiles(dirToRemove);
-            if (newContent.subs.length || newContent.files.length) {
+            if (!osStuff.isDirEmpty(dirToRemove)) {
                 //console.log(`sub folder is not empty after moving content up`);
+                //console.log(`delete -> ${dirToRemove}`);
                 // TODO: Report that we had some problems after all.
                 return;
             }
 
-            //console.log(`delete -> ${dirToRemove}`);
-            //OK: 
             rimraf.sync(dirToRemove);
 
         } catch (error) { // We reported error already and interrupt for loop, but moving folder up is just for convenience.
@@ -308,6 +306,10 @@ function handleFolder(targetFolder: string): void {
     }
     /**/
 } //handleFolder()
+
+// TODO: cmd line notifications
+// TODO: simulate rardir
+// TODO: build system
 
 function checkArg(argTargets: string[]) {
     let rv =  {
