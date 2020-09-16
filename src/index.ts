@@ -129,13 +129,23 @@ namespace osStuff {
         return rv;
     }
 
+    function combineNames(subFolder: folderItem): string[] {
+        let files = subFolder.files.map((it: fileItem) => it.short);
+        let dirs = subFolder.subs.map((it: folderItem) => path.basename(it.name));
+        return [...files, ...dirs];
+    }
+
+    export function hasDuplicates(newContent: folderItem): boolean {
+        let topItems = new Set([...combineNames(newContent)]);
+        let subItems = combineNames(newContent.subs[0]);
+        return subItems.some(sub => topItems.has(sub));
+    }
+    
     export function moveContentUp(subFolder: folderItem): void {
         let oldPath = subFolder.name;
         let newPath = path.dirname(oldPath); // remove last name
 
-        let files = subFolder.files.map((it: fileItem) => it.short);
-        let dirs = subFolder.subs.map((it: folderItem) => path.basename(it.name));
-        let move = [...files, ...dirs];
+        let move = combineNames(subFolder);
 
         move.forEach((it: string) => {
             try {
@@ -159,7 +169,6 @@ namespace osStuff {
 
         //mv.moveSync(oldPath, newPath); <- no sync version
     }
-    
 } //namespace osStuff
 
 namespace appUtils {
@@ -266,6 +275,12 @@ function handleFolder(targetFolder: string): void {
     if (newContent.subs.length === 1 && newContent.files.length === 1) { // we should have one sub-folder and one tm.rar
         try {
             // Check that newContent does not have items from newContent.subs[0]
+            let hasDublicates = osStuff.hasDuplicates(newContent);
+            if (hasDublicates) {
+                //console.log(`dupl: ${hasDublicates}`);
+                // TODO: Report that we had some problems after all.
+                return;
+            }
 
             osStuff.moveContentUp(newContent.subs[0]);
             
@@ -274,7 +289,7 @@ function handleFolder(targetFolder: string): void {
             newContent = osStuff.getDirsAndFiles(dirToRemove);
             if (!newContent.subs.length && !newContent.files.length) {
                 //console.log(`delete -> ${dirToRemove}`);
-                rimraf.sync(dirToRemove);
+                //OK: rimraf.sync(dirToRemove);
             }
         } catch (error) { // We reported error already and interrupt for loop, but moving folder up is just for convenience.
             // TODO: Report that we had some problems after all.
