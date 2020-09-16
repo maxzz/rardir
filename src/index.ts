@@ -107,7 +107,7 @@ namespace osStuff {
                         rv.subs.push(newFolder);
                     }
                 }
-            } else {
+            } else if (_st.isFile()) {
                 let newFile: fileItem = {
                     short: _,
                     btime: _st.birthtime,
@@ -129,6 +129,10 @@ namespace osStuff {
         return rv;
     }
 
+    export function isDirEmpty(dir: string): boolean {
+        return fs.readdirSync(dir).length === 0;
+    }
+
     function combineNames(subFolder: folderItem): string[] {
         let files = subFolder.files.map((it: fileItem) => it.short);
         let dirs = subFolder.subs.map((it: folderItem) => path.basename(it.name));
@@ -145,15 +149,17 @@ namespace osStuff {
         let oldPath = subFolder.name;
         let newPath = path.dirname(oldPath); // remove last name
 
-        let move = combineNames(subFolder);
+        let itemsToMove: string[] = combineNames(subFolder);
 
-        move.forEach((it: string) => {
+        itemsToMove.forEach((it: string) => {
+            let from = path.join(oldPath, it);
+            let to = path.join(newPath, it);
             try {
-                //fsx.moveSync(path.join(oldPath, it), path.join(newPath, it));
-                fs.renameSync(path.join(oldPath, it), path.join(newPath, it));
+                //fsx.moveSync(from, to);
+                fs.renameSync(from, to);
             } catch (error) {
                 //message:'EPERM: operation not permitted, rename 'C:\\Y\\w\\1-node\\1-utils\\rardir\\test\\1files\\sub\\sub2' -> 'C:\\Y\\w\\1-node\\1-utils\\rardir\\test\\1files\\sub2''
-                console.log(chalk.red(`Cannot move folder content up\n${path.join(oldPath, it)}\n${path.join(newPath, it)}\n${error}`));
+                console.log(chalk.red(`Cannot move folder content up\n${from}\n${to}\n${error}`));
                 throw error;
             }
         });
@@ -285,12 +291,17 @@ function handleFolder(targetFolder: string): void {
             osStuff.moveContentUp(newContent.subs[0]);
             
             let dirToRemove = newContent.subs[0].name;
-
             newContent = osStuff.getDirsAndFiles(dirToRemove);
-            if (!newContent.subs.length && !newContent.files.length) {
-                //console.log(`delete -> ${dirToRemove}`);
-                //OK: rimraf.sync(dirToRemove);
+            if (newContent.subs.length || newContent.files.length) {
+                //console.log(`sub folder is not empty after moving content up`);
+                // TODO: Report that we had some problems after all.
+                return;
             }
+
+            //console.log(`delete -> ${dirToRemove}`);
+            //OK: 
+            rimraf.sync(dirToRemove);
+
         } catch (error) { // We reported error already and interrupt for loop, but moving folder up is just for convenience.
             // TODO: Report that we had some problems after all.
         }
