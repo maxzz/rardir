@@ -205,12 +205,12 @@ function handleFolder(targetFolder: string): void {
     // 4. Build dirs.txt, .rar content, and move single folder content up.
 
     // 4.1. Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
-    let torrents: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.tor);
+    let tors: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.tor);
     let urls: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.url);
     let mhts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
     let txts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.txt);
 
-    let notOurFolder = !torrents.length || !urls.length;
+    let notOurFolder = !tors.length || !urls.length;
     if (notOurFolder) {
         return;
     }
@@ -219,10 +219,10 @@ function handleFolder(targetFolder: string): void {
     let rootDir2Rar = filesAndFolders.name;
     let fullNameRar = path.join(rootDir2Rar, 'tm.rar');
 
-    let smallFiles = [...torrents, ...urls, ...mhts, ...txts].filter((_: FItem) => _.size < 5000000); // Filter out files more than 5MB (some mht are > 5MB)
+    let smallFiles = [...tors, ...urls, ...mhts, ...txts].filter((_: FItem) => _.size < 5000000); // Filter out files more than 5MB (some mht are > 5MB)
     let filesToRar: string[] = smallFiles.map(_ => _.short);
 
-    // 4.3. Create dirs.txt and add to .rar collection.
+    // 4.3. Create dirs.txt and add to tm.rar.
     appUtils.execCmdDir(targetFolder);
     filesToRar.push(appUtils.fnameDirsTxt);
 
@@ -259,7 +259,11 @@ function handleFolder(targetFolder: string): void {
 
 // TODO: cmd line notifications
 // TODO: simulate rardir
-// TODO: build system
+// TODO: build system and npm
+
+function handleFiles(filesToRar: string[]): void {
+    // 0. Simulate rardir behaviour. Files should be in the same folder.
+}
 
 function checkArg(argTargets: string[]) {
     let rv =  {
@@ -281,7 +285,7 @@ function checkArg(argTargets: string[]) {
     }
 
     if (!rv.dirs.length && !rv.files.length) {
-        throw errorArgs(`Specify at leats file/folder name to process.`);
+        throw errorArgs(`Specify at leats folder or file(s) name to process.`);
     }
 
     return rv;

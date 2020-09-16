@@ -1,15 +1,41 @@
 {
-  "name": "rardir",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "@types/rimraf": "^3.0.0",
-    "chalk": "^4.1.0",
-    "minimist": "^1.2.5",
-    "rimraf": "^3.0.2"
-  },
-  "devDependencies": {
-    "@types/node": "^14.0.27"
-  }
+    "name": "rardir",
+    "version": "1.0.0",
+    "author": "Max Zakharzhevskiy",
+    "description": "Utility to pack meta data inside specified folders.",
+    "license": "MIT",
+    "main": "dist/cli.js",
+    "bin": "dist/cli.js",
+    "files": [
+        "dist/**/*"
+    ],
+    "engines": {
+        "node": ">=10.16.0"
+    },
+    "keywords": [
+        "utility",
+        "javascript",
+        "typescript"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/maxzz/rardir.git"
+    },
+    "bugs": {
+        "url": "https://github.com/maxzz/rardir/issues"
+    },
+    "scripts": {
+        "dev": "tsc",
+        "build": "rm -rf dist && tsc",
+        "prepublish": "yarn build"
+    },
+    "dependencies": {
+        "chalk": "^4.1.0",
+        "minimist": "^1.2.5",
+        "rimraf": "^3.0.2"
+    },
+    "devDependencies": {
+        "@types/node": "^14.0.27",
+        "@types/rimraf": "^3.0.0"
+    }
 }
