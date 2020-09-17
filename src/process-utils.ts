@@ -44,8 +44,6 @@ Usage: rardir <file> | <folder(s)>`;
 export namespace notes {
     let messages: string[] = []; // messages will be shown if any warnings happen.
     let processed: string[] = []; // processed will be shown if rardir processed more then one folder.
-    // let messages: string[] = ['a', 'b'];
-    // let processed: string[] = ['c', 's'];
 
     export function add(note: string): void {
         messages.push(note);

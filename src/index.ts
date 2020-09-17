@@ -194,6 +194,7 @@ function handleFolder(targetFolder: string): void {
     // 2. Check that we don't have tm.rar already.
     let hasTmRar = filesAndFolders.files.find((_: osStuff.fileItem) => _.short.toLowerCase() === 'tm.rar');
     if (hasTmRar) {
+        notes.addProcessed(`    ${targetFolder} <- skipped`);
         return;
     }
 
@@ -210,8 +211,9 @@ function handleFolder(targetFolder: string): void {
     let mhts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
     let txts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.txt);
 
-    let notOurFolder = !tors.length || !urls.length;
-    if (notOurFolder) {
+    let ourFolder = tors.length && urls.length || mhts.length && urls.length;
+    if (!ourFolder) {
+        notes.addProcessed(`    ${targetFolder} <- skipped`);
         return;
     }
 
@@ -304,6 +306,16 @@ async function main() {
     // await exitProcess(0, '');
 
     let targets = checkArg(args._ || []);
+
+    // If we have a single top folder then check what we have inside.
+    if (targets.dirs.length === 1) {
+        let root: osStuff.folderItem = osStuff.collectDirItems(targets.dirs[0]);
+        if (root.files.length) {
+            notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
+        } else {
+            targets.dirs = root.subs.map((_: osStuff.folderItem) => _.name)
+        }
+    }
 
     // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
     // await exitProcess(0, '');
