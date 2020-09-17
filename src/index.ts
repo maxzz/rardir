@@ -268,9 +268,25 @@ function handleFolder(targetFolder: string): void {
 
 function handleFiles(filesToRar: string[]): void {
     // 0. Simulate rardir behaviour. Files should be in the same folder.
+
+    let root = path.dirname(filesToRar[0]);
+    let files = filesToRar.map(_ => path.basename(_));
+    let fnameRar = path.join(root, 'tm.rar');
+
+    if (exist(fnameRar)) { // If tm.rar exist then use shift+drag to rar.
+        notes.add(`--- INFO: tm.rar already exist here:\n    b:${root}`);
+        return;
+    }
+
+    // Create dirs.txt and add to tm.rar.
+
+    appUtils.execCmdDir(root);
+    files.push(appUtils.fnameDirsTxt);
+
+    appUtils.createRarFile(fnameRar, root, files);
 }
 
-function checkArg(argTargets: string[]): { files: string[]; dirs: string[]} {
+function checkArg(argTargets: string[]): { files: string[]; dirs: string[] } {
     let rv =  {
         files: [],
         dirs: [],
@@ -290,10 +306,6 @@ function checkArg(argTargets: string[]): { files: string[]; dirs: string[]} {
         }
     }
 
-    if (!rv.dirs.length && !rv.files.length) {
-        throw newErrorArgs(`Specify at leats one folder or file(s) name to process.`);
-    }
-
     return rv;
 }
 
@@ -311,7 +323,8 @@ async function main() {
     if (targets.dirs.length === 1) {
         let root: osStuff.folderItem = osStuff.collectDirItems(targets.dirs[0]);
         if (root.files.length) {
-            notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
+            // This is not an error, just a regular case.
+            //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
         } else {
             targets.dirs = root.subs.map((_: osStuff.folderItem) => _.name)
         }
@@ -324,8 +337,10 @@ async function main() {
         for (let dir of targets.dirs) {
             handleFolder(dir);
         }
-    } else {
+    } else if (targets.files.length) {
         handleFiles(targets.files);
+    } else {
+        throw newErrorArgs(`Specify at leats one folder or files name to process.`);
     }
 
     notes.show();

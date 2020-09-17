@@ -17,9 +17,15 @@
             ],
             "args": [
                 //"junk",
+
                 //"C:/Y/w/1-node/1-utils/rardir/test/1files",
+
                 //"C:/Y/w/1-node/1-utils/rardir/test/2folders/sub1",
-                "test/2folders",
+
+                //"test/2folders",
+
+                "test/2folders/sub1/sub1.mht",
+                "test/2folders/sub1/sub1.url",
             ],
             //"console": "externalTerminal"
             "outputCapture": "std"
