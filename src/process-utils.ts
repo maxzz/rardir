@@ -27,7 +27,7 @@ interface ErrorArgs extends Error {
     args: boolean;
 }
 
-export function errorArgs(msg: string): ErrorArgs {
+export function newErrorArgs(msg: string): ErrorArgs {
     let error = new Error(msg) as ErrorArgs;
     error.args = true;
     return error;
@@ -40,3 +40,32 @@ Version ${cfg.version}
 Usage: rardir <file> | <folder(s)>`;
     console.log(help);
 }
+
+export namespace notes {
+    let messages: string[] = []; // messages will be shown if any warnings happen.
+    let processed: string[] = []; // processed will be shown if rardir processed more then one folder.
+    // let messages: string[] = ['a', 'b'];
+    // let processed: string[] = ['c', 's'];
+
+    export function add(note: string): void {
+        messages.push(note);
+    }
+
+    export function addProcessed(note: string): void {
+        processed.push(note);
+    }
+
+    export function buildMessage(): string {
+        let p = processed.length > 1 ? chalk.blueBright(`Processed:\n${processed.join('\n')}\n`) : '';
+        let s = messages.length ? chalk.yellow(`\nNotes:\n${messages.join('\n')}\n`) : '';
+        let f = `${p}${s}`;
+        return f ? `rardir finished\n\n${f}` : '';
+    }
+
+    export async function show(): Promise<void> {
+        let final = buildMessage();
+        if (final) {
+            await exitProcess(0, final);
+        }
+    }
+} //namespace notes

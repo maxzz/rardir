@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import rimraf from 'rimraf';
 import { execSync } from 'child_process';
 import { exist } from './unique-names';
-import { errorArgs, exitProcess, help } from './process-utils';
+import { newErrorArgs, exitProcess, help, notes } from './process-utils';
 
 namespace fnames {
 
@@ -117,11 +117,11 @@ namespace osStuff {
         return [...files, ...dirs];
     }
 
-    export function hasDuplicates(folder: folderItem): boolean {
-        // 0. Check folder does not have items from folder.subs[0].
-        let topItems = new Set([...combineNames(folder)]);
-        let subItems = combineNames(folder.subs[0]);
-        return subItems.some(sub => topItems.has(sub));
+    export function hasDuplicates(a: folderItem, b: folderItem): boolean {
+        // 0. Check folder a does not have top level items from folder b.
+        let aItems = new Set([...combineNames(a)]);
+        let bItems = combineNames(b);
+        return bItems.some(sub => aItems.has(sub));
     }
     
     export function moveContentUp(subFolder: folderItem): void {
@@ -215,6 +215,8 @@ function handleFolder(targetFolder: string): void {
         return;
     }
 
+    notes.addProcessed(`    ${targetFolder}`);
+
     // 4.2. Move to .rar top level files.
     let rootDir2Rar = filesAndFolders.name;
     let fullNameRar = path.join(rootDir2Rar, 'tm.rar');
@@ -230,29 +232,30 @@ function handleFolder(targetFolder: string): void {
 
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
     
-    let newContent: osStuff.folderItem = osStuff.collectDirItems(targetFolder);
-    if (newContent.subs.length === 1 && newContent.files.length === 1) {
+    let main: osStuff.folderItem = osStuff.collectDirItems(targetFolder);
+    if (main.subs.length === 1 && main.files.length === 1) {
         try {
-            let hasDublicates = osStuff.hasDuplicates(newContent);
+            let sub = main.subs[0];
+
+            let hasDublicates = osStuff.hasDuplicates(main, sub);
             if (hasDublicates) {
-                //console.log(`dupl: ${hasDublicates}`);
-                // TODO: Report that we had some problems after all.
+                notes.add(`--- INFO: Not moving content up (folder a has some duplicated names from folder b)\n    a:${main.name}\n    b:${sub.name}`);
                 return;
             }
 
-            osStuff.moveContentUp(newContent.subs[0]);
+            osStuff.moveContentUp(sub);
             
-            let dirToRemove = newContent.subs[0].name;
+            let dirToRemove = sub.name;
             if (!osStuff.isDirEmpty(dirToRemove)) {
-                //console.log(`sub folder is not empty after moving content up`); console.log(`delete -> ${dirToRemove}`);
-                // TODO: Report that we had some problems after all.
+                notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${dirToRemove}`);
                 return;
             }
 
             rimraf.sync(dirToRemove);
 
         } catch (error) { // We reported error already and interrupt for loop, but moving folder up is just for convenience.
-            // TODO: Report that we had some problems after all.
+            notes.add(`--- Info: Failed to move up the folder content\n    ${error}`);
+            //notes.add(`--- Info: Failed to move up the folder content\n    ${error}\n    Continue with the next commnad line params`);
         }
     }//5.
 } //handleFolder()
@@ -265,27 +268,28 @@ function handleFiles(filesToRar: string[]): void {
     // 0. Simulate rardir behaviour. Files should be in the same folder.
 }
 
-function checkArg(argTargets: string[]) {
+function checkArg(argTargets: string[]): { files: string[]; dirs: string[]} {
     let rv =  {
         files: [],
         dirs: [],
-    }
+    };
+
     for (let target of argTargets) {
-        let current = path.resolve(target); // relative to the start up folder
+        let current: string = path.resolve(target); // relative to the start up folder
         let st = exist(current);
         if (st) {
             if (st.isDirectory()) {
                 rv.dirs.push(current);
             } else if (st.isFile()) {
-                rv.files.push(current);
+                rv.files.push(current); // TODO: Check all files should have the same root folder. That is not possible with drag and drop, but still ...
             }
         } else {
-            throw errorArgs(`Target "${target}" does not exist.`);
+            throw newErrorArgs(`Target "${target}" does not exist.`);
         }
     }
 
     if (!rv.dirs.length && !rv.files.length) {
-        throw errorArgs(`Specify at leats folder or file(s) name to process.`);
+        throw newErrorArgs(`Specify at leats one folder or file(s) name to process.`);
     }
 
     return rv;
@@ -296,20 +300,26 @@ async function main() {
 
     let args = require('minimist')(process.argv.slice(2), {
     });
-    //console.log(`args ${JSON.stringify(args, null, 4)}`);
+    // console.log(`args ${JSON.stringify(args, null, 4)}`);
+    // await exitProcess(0, '');
 
     let targets = checkArg(args._ || []);
 
-    let targetFolder = targets.dirs[0];
+    // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
+    // await exitProcess(0, '');
 
-    if (!targetFolder) {
-        await exitProcess(1, `Specify at leats file/folder name`);
+    if (targets.dirs.length) {
+        for (let dir of targets.dirs) {
+            handleFolder(dir);
+        }
+    } else {
+        handleFiles(targets.files);
     }
 
-    handleFolder(targetFolder);
+    notes.show();
 }
 
 main().catch(async (error) => {
     error.args && help(); // Show help if args are invalid
-    await exitProcess(1, chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`));
+    await exitProcess(1, `${notes.buildMessage()}${chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`)}`);
 });
