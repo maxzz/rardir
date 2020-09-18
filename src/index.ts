@@ -5,6 +5,7 @@ import rimraf from 'rimraf';
 import { execSync } from 'child_process';
 import { exist } from './unique-names';
 import { newErrorArgs, exitProcess, help, notes } from './process-utils';
+import { tmpdir } from 'os';
 
 namespace fnames {
 
@@ -270,7 +271,7 @@ function handleFiles(filesToRar: string[]): void {
     let files = filesToRar.map(_ => path.basename(_));
     let fnameRar = path.join(root, 'tm.rar');
 
-    if (exist(fnameRar)) { // If tm.rar exist then use shift+drag to rar.
+    if (exist(fnameRar)) { // If tm.rar exist then use shift+drag to move into rar.
         notes.add(`--- INFO: tm.rar already exist here:\n    b:${root}`);
         return;
     }
@@ -330,34 +331,39 @@ async function main() {
 
     let args = require('minimist')(process.argv.slice(2), {
     });
+    
     // console.log(`args ${JSON.stringify(args, null, 4)}`);
     // await exitProcess(0, '');
 
     let targets = checkArg(args._ || []);
 
-    // If we have a single top folder then check what we have inside.
-    if (targets.dirs.length === 1) {
-        let root: osStuff.folderItem = osStuff.collectDirItems(targets.dirs[0]);
-        if (root.files.length) {
-            // This is not an error, just a regular case.
-            //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
+    // If we have a single top folder and no top files w/ drag&drop then check what we have inside.
+    if (targets.dirs.length === 1 && !targets.files.length) {
+        let target = targets.dirs[0];
+
+        if (path.basename(target).toLowerCase() === 'tm') {
+            targets.files = fs.readdirSync(target).map(_ => path.join(target, _));
+            targets.dirs = [];
         } else {
-            targets.dirs = root.subs.map((_: osStuff.folderItem) => _.name)
+            let root: osStuff.folderItem = osStuff.collectDirItems(target);
+            if (root.files.length) {
+                // This is not an error, just a regular case.
+                //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
+            } else {
+                targets.dirs = root.subs.map((_: osStuff.folderItem) => _.name);
+            }
         }
     }
 
     // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
     // await exitProcess(0, '');
 
-    if (targets.dirs.length && targets.files.length) {
-        let allDragged = [...targets.dirs, ...targets.files];
-        handleFiles(allDragged);
+    if (targets.files.length) {
+        handleFiles([...targets.files, ...targets.dirs]); // TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
     } else if (targets.dirs.length) {
         for (let dir of targets.dirs) {
             handleFolder(dir);
         }
-    } else if (targets.files.length) {
-        handleFiles(targets.files);
     } else {
         throw newErrorArgs(`Specify at leats one folder or files name to process.`);
     }
