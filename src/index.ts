@@ -107,8 +107,9 @@ namespace osStuff {
         return rv;
     }
 
-    export function isDirEmpty(dir: string): boolean {
-        return fs.readdirSync(dir).length === 0;
+    export function nDirent(dir: string): number {
+        // 0. Number of dir entries aka isDirEmpty.
+        return fs.readdirSync(dir).length;
     }
 
     function combineNames(folder: folderItem): string[] {
@@ -248,7 +249,7 @@ function handleFolder(targetFolder: string): void {
             osStuff.moveContentUp(sub);
             
             let dirToRemove = sub.name;
-            if (!osStuff.isDirEmpty(dirToRemove)) {
+            if (osStuff.nDirent(dirToRemove)) {
                 notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${dirToRemove}`);
                 return;
             }
@@ -280,6 +281,25 @@ function handleFiles(filesToRar: string[]): void {
     files.push(appUtils.fnameDirsTxt);
 
     appUtils.createRarFile(fnameRar, root, files);
+
+    // If we moved eveything inside tm.rar and parent folder name is 'tm' (and parent does not have tm.rar) then move tm.rar up and delete tm folder.
+
+    let parentRar = path.join(path.dirname(root), 'tm.rar');
+    if (exist(parentRar)) {
+        notes.add(`--- INFO: Not moving tm.rar to parent (parent/tm.rar already exist)\n    b:${root}`);
+        return;
+    }
+
+    if (osStuff.nDirent(root) === 1) {
+        osStuff.moveContentUp(osStuff.collectDirItems(root));
+    }
+
+    if (osStuff.nDirent(root)) {
+        notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${root}`);
+        return;
+    }
+
+    rimraf.sync(root);
 }
 
 function checkArg(argTargets: string[]): { files: string[]; dirs: string[] } {

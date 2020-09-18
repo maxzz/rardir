@@ -26,6 +26,10 @@
 
                 //"test/2folders/sub1/sub1.mht",
                 //"test/2folders/sub1/sub1.url",
+
+                "X:\\X\\WZ\\X\\2 notdupl, notrec\\0 serials,\\Тайны Ниро Вульфа - A Nero Wolfe Mystery - 2001-2002\\tm\\Тайны Ниро Вульфа - A Nero Wolfe Mystery - 2001-2002, season 1,2, SATrip.mht",
+                "X:\\X\\WZ\\X\\2 notdupl, notrec\\0 serials,\\Тайны Ниро Вульфа - A Nero Wolfe Mystery - 2001-2002\\tm\\Тайны Ниро Вульфа - A Nero Wolfe Mystery - 2001-2002.URL"
+                
             ],
             //"console": "externalTerminal"
             "outputCapture": "std"
