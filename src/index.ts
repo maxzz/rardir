@@ -293,14 +293,14 @@ function handleFiles(filesToRar: string[]): void {
 
     if (osStuff.nDirent(root) === 1) {
         osStuff.moveContentUp(osStuff.collectDirItems(root));
+    
+        if (osStuff.nDirent(root)) {
+            notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${root}`);
+            return;
+        }
+    
+        rimraf.sync(root);
     }
-
-    if (osStuff.nDirent(root)) {
-        notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${root}`);
-        return;
-    }
-
-    rimraf.sync(root);
 }
 
 function checkArg(argTargets: string[]): { files: string[]; dirs: string[] } {
