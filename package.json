@@ -14,6 +14,7 @@
     },
     "keywords": [
         "utility",
+        "winrar",
         "javascript",
         "typescript"
     ],
@@ -28,7 +29,7 @@
         "dev": "tsc",
         "build": "rm -rf dist && tsc",
         "prepublish": "yarn build",
-        "makebin": "yarn build && pkg -t host -o rardir dist/index.js"
+        "makebin": "yarn build && pkg -t host -o rardirj dist/index.js"
     },
     "dependencies": {
         "chalk": "^4.1.0",

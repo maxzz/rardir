@@ -262,10 +262,6 @@ function handleFolder(targetFolder: string): void {
     }//5.
 } //handleFolder()
 
-// TODO: cmd line notifications
-// TODO: simulate rardir
-// TODO: build system and npm
-
 function handleFiles(filesToRar: string[]): void {
     // 0. Simulate rardir behaviour. Files should be in the same folder.
 
@@ -333,7 +329,10 @@ async function main() {
     // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
     // await exitProcess(0, '');
 
-    if (targets.dirs.length) {
+    if (targets.dirs.length && targets.files.length) {
+        let allDragged = [...targets.dirs, ...targets.files];
+        handleFiles(allDragged);
+    } else if (targets.dirs.length) {
         for (let dir of targets.dirs) {
             handleFolder(dir);
         }
