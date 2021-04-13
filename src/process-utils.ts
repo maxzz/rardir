@@ -13,7 +13,7 @@ export async function exitProcess(exitCode: number, msg: string): Promise<void> 
             }
             else {
                 console.log(' ');
-                resolve();
+                resolve(void 0);
             }
         });
     }
