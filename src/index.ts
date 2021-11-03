@@ -309,8 +309,7 @@ type StartArgs = {
     dirs: string[];
 };
 
-function checkArg(): StartArgs {
-
+function getAndCheckArg(): StartArgs {
     let args = require('minimist')(process.argv.slice(2), {
     });
     
@@ -373,7 +372,7 @@ function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
 async function main() {
     appUtils.findWinrar();
 
-    let targets: StartArgs = checkArg();
+    let targets: StartArgs = getAndCheckArg();
     targets = singleTopFolderWoFilesCase(targets);
 
     // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
