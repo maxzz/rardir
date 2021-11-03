@@ -265,7 +265,7 @@ function handleFolder(targetFolder: string): void {
     }//5.
 } //handleFolder()
 
-function createTmRar(filesToRar: string[]): void {
+function createTmRarFromDroppedItems(filesToRar: string[], singleTm: boolean): void {
     // 0. Simulate rardir behaviour. Files should be in the same folder.
 
     let root = path.dirname(filesToRar[0]);
@@ -307,6 +307,7 @@ function createTmRar(filesToRar: string[]): void {
 type StartArgs = {
     files: string[];
     dirs: string[];
+    singleTm?: boolean; // In this case run dir on parent of 'tm' folder.
 };
 
 function getAndCheckArg(): StartArgs {
@@ -351,6 +352,7 @@ function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
             return {
                 files: fs.readdirSync(singleTopdir).map(_ => path.join(singleTopdir, _)),
                 dirs: [],
+                singleTm: true,
             };
         } else {
             // 2. Get folders of single top folder and pretend we got list of folders.
@@ -380,7 +382,8 @@ async function main() {
 
     if (targets.files.length) {
         // 1. all mixed content goes to tm.rar (files and folders).
-        createTmRar([...targets.files, ...targets.dirs]); // TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
+        const toRar = [...targets.files, ...targets.dirs]; // TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
+        createTmRarFromDroppedItems(toRar, targets.singleTm);
     }
     else if (targets.dirs.length) {
         // 2. treat each folder separately.
