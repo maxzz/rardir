@@ -149,13 +149,13 @@ namespace osStuff {
 namespace appUtils {
     export const fnameDirsTxt = 'z_dirs.txt';
 
-    export function execCmdDir(folder: string) {
+    export function execCmdDir(folderToDir: string, folderToOut?: string) {
         let comspec = process.env.comspec || 'cmd.exe';
-        let redirect = path.join(folder, fnameDirsTxt);
+        let redirect = path.join(folderToOut || folderToDir, fnameDirsTxt);
         try {
-            execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
+            execSync(`${comspec} /c tree /a /f "${folderToDir}" > "${redirect}"`, { cwd: folderToDir });
             execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
-            execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
+            execSync(`${comspec} /c dir /s/o "${folderToDir}" >> "${redirect}"`);
             execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
         } catch (error) {
             throw new Error(`Failed to create ${fnameDirsTxt} file:\n${error.message}\n`);
@@ -279,7 +279,7 @@ function createTmRarFromDroppedItems(filesToRar: string[], singleTm: boolean): v
 
     // Create dirs.txt and add to tm.rar.
 
-    appUtils.execCmdDir(root);
+    appUtils.execCmdDir(singleTm ? path.dirname(root) : root, root); // make dir on parent folder in singleTm case.
     files.push(appUtils.fnameDirsTxt);
 
     appUtils.createRarFile(fnameRar, root, files);
