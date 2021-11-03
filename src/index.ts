@@ -38,6 +38,7 @@ namespace fnames {
         ['.torrent',      extType.tor],
         ['.url',          extType.url],
         ['.mht',          extType.mht],
+        ['.mhtml',        extType.mht],
         ['.pdf',          extType.pdf],
         ['.unitypackage', extType.unity],
         ['.txt',          extType.txt],
