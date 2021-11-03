@@ -309,7 +309,16 @@ type StartArgs = {
     dirs: string[];
 };
 
-function checkArg(argTargets: string[]): StartArgs {
+function checkArg(): StartArgs {
+
+    let args = require('minimist')(process.argv.slice(2), {
+    });
+    
+    // console.log(`args ${JSON.stringify(args, null, 4)}`);
+    // await exitProcess(0, '');
+
+    let argTargets: string[] = args._ || [];
+
     let rv =  {
         files: [],
         dirs: [],
@@ -340,8 +349,10 @@ function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
 
         if (path.basename(singleTopdir).toLowerCase() === 'tm') {
             // 1. Get files of single 'tm' folder and continue as dnd w/ only files.
-            targets.files = fs.readdirSync(singleTopdir).map(_ => path.join(singleTopdir, _));
-            targets.dirs = [];
+            return {
+                files: fs.readdirSync(singleTopdir).map(_ => path.join(singleTopdir, _)),
+                dirs: [],
+            }
         } else {
             // 2. Get folders of single top folder and pretend we got list of folders.
             const root: osStuff.FolderItem = osStuff.collectDirItems(singleTopdir);
@@ -349,7 +360,10 @@ function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
                 // This is not an error, just a regular case.
                 //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
             } else {
-                targets.dirs = root.subs.map((_: osStuff.FolderItem) => _.name);
+                return {
+                    files: [],
+                    dirs: root.subs.map((_: osStuff.FolderItem) => _.name),
+                }
             }
         }
     }
@@ -359,14 +373,7 @@ function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
 async function main() {
     appUtils.findWinrar();
 
-    let args = require('minimist')(process.argv.slice(2), {
-    });
-    
-    // console.log(`args ${JSON.stringify(args, null, 4)}`);
-    // await exitProcess(0, '');
-
-    let targets: StartArgs = checkArg(args._ || []);
-
+    let targets: StartArgs = checkArg();
     targets = singleTopFolderWoFilesCase(targets);
 
     // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
