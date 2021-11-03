@@ -1,6 +1,6 @@
 {
     "name": "rardir",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "author": "Max Zakharzhevskiy",
     "description": "Utility to pack meta data inside specified folders.",
     "license": "MIT",
