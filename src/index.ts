@@ -63,13 +63,13 @@ namespace osStuff {
         btime: Date;        // file created (birthtime) timestamp
         mtime?: Date;       // file data modified timestamp; present if different from btime
         size: number;       // file size
-    }
+    };
 
     export type FolderItem = {
         name: string;       // Folder full name
         files: FileItem[];  // Short filenames i.e. wo/ path.
         subs: FolderItem[]; // Sub-folders.
-    }
+    };
 
     function collectFiles(dir: string, rv: FolderItem, recursive: boolean): void {
         rv.files.push(...fs.readdirSync(dir).map((_) => {
@@ -91,7 +91,7 @@ namespace osStuff {
                 let newFile: FileItem = {
                     short: _,
                     btime: st.birthtime,
-                    ...(st.birthtime !== st.mtime && {mtime: st.mtime}),
+                    ...(st.birthtime !== st.mtime && { mtime: st.mtime }),
                     size: st.size,
                 };
                 return newFile;
@@ -126,7 +126,7 @@ namespace osStuff {
         let bItems = combineNames(b);
         return bItems.some(sub => aItems.has(sub));
     }
-    
+
     export function moveContentUp(subFolder: FolderItem): void {
         let oldPath = subFolder.name;
         let newPath = path.dirname(oldPath); // remove last name
@@ -152,7 +152,7 @@ namespace appUtils {
     export function execCmdDir(folder: string) {
         let comspec = process.env.comspec || 'cmd.exe';
         let redirect = path.join(folder, fnameDirsTxt);
-         try {
+        try {
             execSync(`${comspec} /c tree /a /f "${folder}" > "${redirect}"`, { cwd: folder });
             execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
             execSync(`${comspec} /c dir /s/o "${folder}" >> "${redirect}"`);
@@ -163,16 +163,16 @@ namespace appUtils {
     }
 
     let WINRAR: string;
-    
+
     export function createRarFile(fullNameRar: string, baseFolderForShortNames: string, shortNamesToRar: string[]) {
         if (!shortNamesToRar.length) {
             throw new Error(`No files to move into ${fullNameRar}`);
         }
-    
+
         let names = shortNamesToRar.map(_ => `"${_}"`).join(' ');
         let cmd = `"${WINRAR}" m \"${fullNameRar}\" ${names}`; // Don't use 'start', it will spawn new process and we receive closed handle of start not winrar.
         try {
-            execSync(cmd, {cwd: baseFolderForShortNames});
+            execSync(cmd, { cwd: baseFolderForShortNames });
         } catch (error) {
             throw new Error(`Failed to create ${fullNameRar}\n${error.message}\n`);
         }
@@ -185,7 +185,7 @@ namespace appUtils {
             throw new Error(`${error}\nMake path to winrar.exe as part of PATH`);
         }
     }
-    
+
 } //namespace appUtils
 
 function handleFolder(targetFolder: string): void {
@@ -202,7 +202,7 @@ function handleFolder(targetFolder: string): void {
     }
 
     // 3. Get what we have now inside this folder.
-    type FItem = osStuff.FileItem & { ext: fnames.extType };
+    type FItem = osStuff.FileItem & { ext: fnames.extType; };
 
     let fItems: FItem[] = filesAndFolders.files.map((fileItem: osStuff.FileItem) => ({ ...fileItem, ext: fnames.castFileExtension(path.extname(fileItem.short)) }));
 
@@ -236,7 +236,7 @@ function handleFolder(targetFolder: string): void {
     appUtils.createRarFile(fullNameRar, rootDir2Rar, filesToRar);
 
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
-    
+
     let main: osStuff.FolderItem = osStuff.collectDirItems(targetFolder);
     if (main.subs.length === 1 && main.files.length === 1) {
         try {
@@ -249,7 +249,7 @@ function handleFolder(targetFolder: string): void {
             }
 
             osStuff.moveContentUp(sub);
-            
+
             let dirToRemove = sub.name;
             if (osStuff.nDirent(dirToRemove)) {
                 notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${dirToRemove}`);
@@ -265,7 +265,7 @@ function handleFolder(targetFolder: string): void {
     }//5.
 } //handleFolder()
 
-function handleFiles(filesToRar: string[]): void {
+function createTmRar(filesToRar: string[]): void {
     // 0. Simulate rardir behaviour. Files should be in the same folder.
 
     let root = path.dirname(filesToRar[0]);
@@ -294,12 +294,12 @@ function handleFiles(filesToRar: string[]): void {
 
     if (osStuff.nDirent(root) === 1) {
         osStuff.moveContentUp(osStuff.collectDirItems(root));
-    
+
         if (osStuff.nDirent(root)) {
             notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${root}`);
             return;
         }
-    
+
         rimraf.sync(root);
     }
 }
@@ -312,13 +312,13 @@ type StartArgs = {
 function getAndCheckArg(): StartArgs {
     let args = require('minimist')(process.argv.slice(2), {
     });
-    
+
     // console.log(`args ${JSON.stringify(args, null, 4)}`);
     // await exitProcess(0, '');
 
     let argTargets: string[] = args._ || [];
 
-    let rv =  {
+    let rv = {
         files: [],
         dirs: [],
     };
@@ -351,7 +351,7 @@ function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
             return {
                 files: fs.readdirSync(singleTopdir).map(_ => path.join(singleTopdir, _)),
                 dirs: [],
-            }
+            };
         } else {
             // 2. Get folders of single top folder and pretend we got list of folders.
             const root: osStuff.FolderItem = osStuff.collectDirItems(singleTopdir);
@@ -362,7 +362,7 @@ function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
                 return {
                     files: [],
                     dirs: root.subs.map((_: osStuff.FolderItem) => _.name),
-                }
+                };
             }
         }
     }
@@ -379,8 +379,11 @@ async function main() {
     // await exitProcess(0, '');
 
     if (targets.files.length) {
-        handleFiles([...targets.files, ...targets.dirs]); // TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
-    } else if (targets.dirs.length) {
+        // 1. all mixed content goes to tm.rar (files and folders).
+        createTmRar([...targets.files, ...targets.dirs]); // TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
+    }
+    else if (targets.dirs.length) {
+        // 2. treat each folder separately.
         for (let dir of targets.dirs) {
             handleFolder(dir);
         }
