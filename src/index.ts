@@ -304,7 +304,12 @@ function handleFiles(filesToRar: string[]): void {
     }
 }
 
-function checkArg(argTargets: string[]): { files: string[]; dirs: string[] } {
+type StartArgs = {
+    files: string[];
+    dirs: string[];
+};
+
+function checkArg(argTargets: string[]): StartArgs {
     let rv =  {
         files: [],
         dirs: [],
@@ -327,6 +332,30 @@ function checkArg(argTargets: string[]): { files: string[]; dirs: string[] } {
     return rv;
 }
 
+function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
+    // Special case: single top folder wo/ files inside.
+    // If we have a single top folder and no top files w/ drag&drop then check what we have inside.
+    if (targets.dirs.length === 1 && !targets.files.length) {
+        const singleTopdir = targets.dirs[0];
+
+        if (path.basename(singleTopdir).toLowerCase() === 'tm') {
+            // 1. Get files of single 'tm' folder and continue as dnd w/ only files.
+            targets.files = fs.readdirSync(singleTopdir).map(_ => path.join(singleTopdir, _));
+            targets.dirs = [];
+        } else {
+            // 2. Get folders of single top folder and pretend we got list of folders.
+            const root: osStuff.FolderItem = osStuff.collectDirItems(singleTopdir);
+            if (root.files.length) {
+                // This is not an error, just a regular case.
+                //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
+            } else {
+                targets.dirs = root.subs.map((_: osStuff.FolderItem) => _.name);
+            }
+        }
+    }
+    return targets;
+}
+
 async function main() {
     appUtils.findWinrar();
 
@@ -336,26 +365,9 @@ async function main() {
     // console.log(`args ${JSON.stringify(args, null, 4)}`);
     // await exitProcess(0, '');
 
-    let targets = checkArg(args._ || []);
+    let targets: StartArgs = checkArg(args._ || []);
 
-    // 2. Special case: single top folder wo/ files inside.
-    // If we have a single top folder and no top files w/ drag&drop then check what we have inside.
-    if (targets.dirs.length === 1 && !targets.files.length) {
-        const target = targets.dirs[0];
-
-        if (path.basename(target).toLowerCase() === 'tm') {
-            targets.files = fs.readdirSync(target).map(_ => path.join(target, _));
-            targets.dirs = [];
-        } else {
-            const root: osStuff.FolderItem = osStuff.collectDirItems(target);
-            if (root.files.length) {
-                // This is not an error, just a regular case.
-                //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
-            } else {
-                targets.dirs = root.subs.map((_: osStuff.FolderItem) => _.name);
-            }
-        }
-    }
+    targets = singleTopFolderWoFilesCase(targets);
 
     // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
     // await exitProcess(0, '');
