@@ -5,7 +5,6 @@ import rimraf from 'rimraf';
 import { execSync } from 'child_process';
 import { exist } from './unique-names';
 import { newErrorArgs, exitProcess, help, notes } from './process-utils';
-import { tmpdir } from 'os';
 
 namespace fnames {
 
@@ -21,6 +20,7 @@ namespace fnames {
         pdf,     // '.pdf'
         unity,   // '.unitypackage'
         txt,     // '.txt'
+        srt,     // '.srt' subtitles
         avi,     // '.avi' video
         mp4,     // '.mp4' video
         mkv,     // '.mkv' video
@@ -41,6 +41,7 @@ namespace fnames {
         ['.pdf',          extType.pdf],
         ['.unitypackage', extType.unity],
         ['.txt',          extType.txt],
+        ['.srt',          extType.srt],
         ['.avi',          extType.avi],
         ['.mp4',          extType.mp4],
         ['.mkv',          extType.mkv],
