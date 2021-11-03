@@ -58,26 +58,26 @@ namespace fnames {
 
 namespace osStuff {
 
-    export type fileItem = {
+    export type FileItem = {
         short: string;      // filename wo/ path
         btime: Date;        // file created (birthtime) timestamp
         mtime?: Date;       // file data modified timestamp; present if different from btime
         size: number;       // file size
     }
 
-    export type folderItem = {
+    export type FolderItem = {
         name: string;       // Folder full name
-        files: fileItem[];  // Short filenames i.e. wo/ path.
-        subs: folderItem[]; // Sub-folders.
+        files: FileItem[];  // Short filenames i.e. wo/ path.
+        subs: FolderItem[]; // Sub-folders.
     }
 
-    function collectFiles(dir: string, rv: folderItem, recursive: boolean): void {
+    function collectFiles(dir: string, rv: FolderItem, recursive: boolean): void {
         rv.files.push(...fs.readdirSync(dir).map((_) => {
             let fname = path.join(dir, _);
             let st = fs.statSync(fname);
             if (st.isDirectory()) {
                 if (recursive) {
-                    let newFolder: folderItem = {
+                    let newFolder: FolderItem = {
                         name: fname,
                         files: [],
                         subs: [],
@@ -88,7 +88,7 @@ namespace osStuff {
                     }
                 }
             } else if (st.isFile()) {
-                let newFile: fileItem = {
+                let newFile: FileItem = {
                     short: _,
                     btime: st.birthtime,
                     ...(st.birthtime !== st.mtime && {mtime: st.mtime}),
@@ -99,8 +99,8 @@ namespace osStuff {
         }).filter(Boolean));
     }
 
-    export function collectDirItems(dir: string): folderItem {
-        let rv: folderItem = {
+    export function collectDirItems(dir: string): FolderItem {
+        let rv: FolderItem = {
             name: dir,
             files: [],
             subs: [],
@@ -114,20 +114,20 @@ namespace osStuff {
         return fs.readdirSync(dir).length;
     }
 
-    function combineNames(folder: folderItem): string[] {
-        let files = folder.files.map((it: fileItem) => it.short);
-        let dirs = folder.subs.map((it: folderItem) => path.basename(it.name));
+    function combineNames(folder: FolderItem): string[] {
+        let files = folder.files.map((it: FileItem) => it.short);
+        let dirs = folder.subs.map((it: FolderItem) => path.basename(it.name));
         return [...files, ...dirs];
     }
 
-    export function hasDuplicates(a: folderItem, b: folderItem): boolean {
+    export function hasDuplicates(a: FolderItem, b: FolderItem): boolean {
         // 0. Check folder a does not have top level items from folder b.
         let aItems = new Set([...combineNames(a)]);
         let bItems = combineNames(b);
         return bItems.some(sub => aItems.has(sub));
     }
     
-    export function moveContentUp(subFolder: folderItem): void {
+    export function moveContentUp(subFolder: FolderItem): void {
         let oldPath = subFolder.name;
         let newPath = path.dirname(oldPath); // remove last name
 
@@ -192,19 +192,19 @@ function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>
 
     // 1. Get folders and files inside the target folder.
-    let filesAndFolders: osStuff.folderItem = osStuff.collectDirItems(targetFolder);
+    let filesAndFolders: osStuff.FolderItem = osStuff.collectDirItems(targetFolder);
 
     // 2. Check that we don't have tm.rar already.
-    let hasTmRar = filesAndFolders.files.find((_: osStuff.fileItem) => _.short.toLowerCase() === 'tm.rar');
+    let hasTmRar = filesAndFolders.files.find((fileItem: osStuff.FileItem) => fileItem.short.toLowerCase() === 'tm.rar');
     if (hasTmRar) {
         notes.addProcessed(`    ${targetFolder} <- skipped`);
         return;
     }
 
     // 3. Get what we have now inside this folder.
-    type FItem = osStuff.fileItem & { ext: fnames.extType };
+    type FItem = osStuff.FileItem & { ext: fnames.extType };
 
-    let fItems: FItem[] = filesAndFolders.files.map((_: osStuff.fileItem) => ({ ..._, ext: fnames.castFileExtension(path.extname(_.short)) }));
+    let fItems: FItem[] = filesAndFolders.files.map((fileItem: osStuff.FileItem) => ({ ...fileItem, ext: fnames.castFileExtension(path.extname(fileItem.short)) }));
 
     // 4. Build dirs.txt, .rar content, and move single folder content up.
 
@@ -237,7 +237,7 @@ function handleFolder(targetFolder: string): void {
 
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
     
-    let main: osStuff.folderItem = osStuff.collectDirItems(targetFolder);
+    let main: osStuff.FolderItem = osStuff.collectDirItems(targetFolder);
     if (main.subs.length === 1 && main.files.length === 1) {
         try {
             let sub = main.subs[0];
@@ -338,20 +338,21 @@ async function main() {
 
     let targets = checkArg(args._ || []);
 
+    // 2. Special case: single top folder wo/ files inside.
     // If we have a single top folder and no top files w/ drag&drop then check what we have inside.
     if (targets.dirs.length === 1 && !targets.files.length) {
-        let target = targets.dirs[0];
+        const target = targets.dirs[0];
 
         if (path.basename(target).toLowerCase() === 'tm') {
             targets.files = fs.readdirSync(target).map(_ => path.join(target, _));
             targets.dirs = [];
         } else {
-            let root: osStuff.folderItem = osStuff.collectDirItems(target);
+            const root: osStuff.FolderItem = osStuff.collectDirItems(target);
             if (root.files.length) {
                 // This is not an error, just a regular case.
                 //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
             } else {
-                targets.dirs = root.subs.map((_: osStuff.folderItem) => _.name);
+                targets.dirs = root.subs.map((_: osStuff.FolderItem) => _.name);
             }
         }
     }
