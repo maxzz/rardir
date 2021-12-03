@@ -402,3 +402,6 @@ main().catch(async (error) => {
     error.args && help(); // Show help if args are invalid
     await exitProcess(1, `${notes.buildMessage()}${chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`)}`);
 });
+
+//TODO: add check on file size within createTmRarFromDroppedItems()
+//TODO: preform for multiple forders a single 'tm' folder check similar to createTmRarFromDroppedItems()
