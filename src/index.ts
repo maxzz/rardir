@@ -2,192 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import rimraf from 'rimraf';
-import { execSync } from 'child_process';
+import { newErrorArgs, exitProcess } from './utils-errors';
+import { osStuff } from './utils-os';
+import { appUtils, fnames } from './utils-app';
 import { exist } from './unique-names';
-import { newErrorArgs, exitProcess, help, notes } from './process-utils';
-
-namespace fnames {
-
-    export const enum extType {
-        unk,     // Not interested for us.
-        empty,   // No file extension at all.
-
-        rar,     // '.rar'
-        zip,     // '.zip'
-        tor,     // '.torrent'
-        url,     // '.url'
-        mht,     // '.mht'
-        pdf,     // '.pdf'
-        unity,   // '.unitypackage'
-        txt,     // '.txt'
-        srt,     // '.srt' subtitles
-        avi,     // '.avi' video
-        mp4,     // '.mp4' video
-        mkv,     // '.mkv' video
-    }
-
-    export type fileItem = { // This is only file name wo/ path and extension, plus type of file extension.
-        short: string;      // Original filename wo/ path.
-        name: string;       // File name wo/ extension and path.
-        ext: extType;       // File extension type of this file name.
-    }
-
-    let extTypes = new Map([
-        ['.rar',          extType.rar],
-        ['.zip',          extType.zip],
-        ['.torrent',      extType.tor],
-        ['.url',          extType.url],
-        ['.mht',          extType.mht],
-        ['.mhtml',        extType.mht],
-        ['.pdf',          extType.pdf],
-        ['.unitypackage', extType.unity],
-        ['.txt',          extType.txt],
-        ['.srt',          extType.srt],
-        ['.avi',          extType.avi],
-        ['.mp4',          extType.mp4],
-        ['.mkv',          extType.mkv],
-    ]);
-
-    export function castFileExtension(ext: string): extType {
-        ext = ext.trim();
-        if (ext === '.' || ext === '') {
-            return extType.empty;
-        }
-        return extTypes.get(ext.toLowerCase()) || extType.unk;
-    }
-} //namespace fnames
-
-namespace osStuff {
-
-    export type FileItem = {
-        short: string;      // filename wo/ path
-        btime: Date;        // file created (birthtime) timestamp
-        mtime?: Date;       // file data modified timestamp; present if different from btime
-        size: number;       // file size
-    };
-
-    export type FolderItem = {
-        name: string;       // Folder full name
-        files: FileItem[];  // Short filenames i.e. wo/ path.
-        subs: FolderItem[]; // Sub-folders.
-    };
-
-    function collectFiles(dir: string, rv: FolderItem, recursive: boolean): void {
-        rv.files.push(...fs.readdirSync(dir).map((_) => {
-            let fname = path.join(dir, _);
-            let st = fs.statSync(fname);
-            if (st.isDirectory()) {
-                if (recursive) {
-                    let newFolder: FolderItem = {
-                        name: fname,
-                        files: [],
-                        subs: [],
-                    };
-                    collectFiles(fname, newFolder, recursive);
-                    if (newFolder.files.length || newFolder.subs.length) {
-                        rv.subs.push(newFolder);
-                    }
-                }
-            } else if (st.isFile()) {
-                let newFile: FileItem = {
-                    short: _,
-                    btime: st.birthtime,
-                    ...(st.birthtime !== st.mtime && { mtime: st.mtime }),
-                    size: st.size,
-                };
-                return newFile;
-            }
-        }).filter(Boolean));
-    }
-
-    export function collectDirItems(dir: string): FolderItem {
-        let rv: FolderItem = {
-            name: dir,
-            files: [],
-            subs: [],
-        };
-        collectFiles(dir, rv, true);
-        return rv;
-    }
-
-    export function nDirent(dir: string): number {
-        // 0. Number of dir entries aka isDirEmpty.
-        return fs.readdirSync(dir).length;
-    }
-
-    function combineNames(folder: FolderItem): string[] {
-        let files = folder.files.map((it: FileItem) => it.short);
-        let dirs = folder.subs.map((it: FolderItem) => path.basename(it.name));
-        return [...files, ...dirs];
-    }
-
-    export function hasDuplicates(a: FolderItem, b: FolderItem): boolean {
-        // 0. Check folder a does not have top level items from folder b.
-        let aItems = new Set([...combineNames(a)]);
-        let bItems = combineNames(b);
-        return bItems.some(sub => aItems.has(sub));
-    }
-
-    export function moveContentUp(subFolder: FolderItem): void {
-        let oldPath = subFolder.name;
-        let newPath = path.dirname(oldPath); // remove last name
-
-        let itemsToMove: string[] = combineNames(subFolder);
-
-        itemsToMove.forEach((it: string) => {
-            let from = path.join(oldPath, it);
-            let to = path.join(newPath, it);
-            try {
-                fs.renameSync(from, to); // TODO: Check posibily if huge files will be copied instead of moving.
-            } catch (error) {
-                console.log(chalk.red(`Cannot move folder content up\n${from}\n${to}\n${error}`));
-                throw error;
-            }
-        });
-    }
-} //namespace osStuff
-
-namespace appUtils {
-    export const fnameDirsTxt = 'z_dirs.txt';
-
-    export function execCmdDir(folderToDir: string, folderToOut?: string) {
-        let comspec = process.env.comspec || 'cmd.exe';
-        let redirect = path.join(folderToOut || folderToDir, fnameDirsTxt);
-        try {
-            execSync(`${comspec} /c tree /a /f "${folderToDir}" > "${redirect}"`, { cwd: folderToDir });
-            execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
-            execSync(`${comspec} /c dir /s/o "${folderToDir}" >> "${redirect}"`);
-            execSync(`${comspec} /c echo -------------------------------------- >> "${redirect}"`);
-        } catch (error) {
-            throw new Error(`Failed to create ${fnameDirsTxt} file:\n${error.message}\n`);
-        }
-    }
-
-    let WINRAR: string;
-
-    export function createRarFile(fullNameRar: string, baseFolderForShortNames: string, shortNamesToRar: string[]) {
-        if (!shortNamesToRar.length) {
-            throw new Error(`No files to move into ${fullNameRar}`);
-        }
-
-        let names = shortNamesToRar.map(_ => `"${_}"`).join(' ');
-        let cmd = `"${WINRAR}" m \"${fullNameRar}\" ${names}`; // Don't use 'start', it will spawn new process and we receive closed handle of start not winrar.
-        try {
-            execSync(cmd, { cwd: baseFolderForShortNames });
-        } catch (error) {
-            throw new Error(`Failed to create ${fullNameRar}\n${error.message}\n`);
-        }
-    }
-
-    export function findWinrar() {
-        try {
-            WINRAR = execSync(`where winrar`).toString().split(/[\r\n]/)[0];
-        } catch (error) {
-            throw new Error(`${error}\nMake path to winrar.exe as part of PATH`);
-        }
-    }
-
-} //namespace appUtils
+import { help, notes } from './help';
 
 function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>
@@ -320,7 +139,7 @@ function getAndCheckArg(): StartArgs {
 
     let argTargets: string[] = args._ || [];
 
-    let rv = {
+    let rv: { files: string[], dirs: string[], } = {
         files: [],
         dirs: [],
     };
@@ -384,7 +203,7 @@ async function main() {
     if (targets.files.length) {
         // 1. all mixed content goes to tm.rar (files and folders).
         const toRar = [...targets.files, ...targets.dirs]; // TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
-        createTmRarFromDroppedItems(toRar, targets.singleTm);
+        createTmRarFromDroppedItems(toRar, !!targets.singleTm);
     }
     else if (targets.dirs.length) {
         // 2. treat each folder separately.
@@ -399,8 +218,10 @@ async function main() {
 }
 
 main().catch(async (error) => {
-    error.args && help(); // Show help if args are invalid
-    await exitProcess(1, `${notes.buildMessage()}${chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`)}`);
+    error.args && help(); // Show help if arguments are invalid
+    
+    const msg = chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`);
+    await exitProcess(1, `${notes.buildMessage()}${msg}`);
 });
 
 //TODO: add check on file size within createTmRarFromDroppedItems()

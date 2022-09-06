@@ -51,9 +51,9 @@ function nowDayTime(delimiter: string = ' at ') {
 
 function ensureNameUnique(name: string, nameIsFname: boolean = true): string {
     // 0. Ensure that file/folder name is unique.
-    let basename: string, ext: string = '', index: number = 0, initialized: boolean = false;
+    let basename = '', ext = '', index: number = 0, initialized: boolean = false;
     while (1) {
-        let st: fs.Stats = exist(name);
+        let st: fs.Stats | undefined = exist(name);
         if (!st || (st.isDirectory() === nameIsFname)) { // case if folder exist but we create file name.
             return name;
         }
@@ -70,6 +70,7 @@ function ensureNameUnique(name: string, nameIsFname: boolean = true): string {
         index++;
         name = `${basename} (${index})${ext}`;
     }
+    return 'never';
 } //ensureNameUnique()
 
 export function uniqueFolderName(prefix: string): string {
