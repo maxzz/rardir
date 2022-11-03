@@ -1,11 +1,6 @@
-import fs from 'fs';
-import path from 'path';
 import chalk from 'chalk';
-import rimraf from 'rimraf';
 import { newErrorArgs, exitProcess } from './utils/utils-errors';
-import { OsStuff } from './utils/utils-os';
-import { appUtils, fnames } from './app/utils-app';
-import { exist } from './utils/unique-names';
+import { appUtils } from './app/utils-app';
 import { help } from './app/app-help';
 import { getAndCheckArg, StartArgs } from './app/app-args';
 import { notes } from './app/app-notes';
@@ -22,7 +17,7 @@ async function main() {
 
     if (targets.files.length) {
         // 1. all mixed content goes to tm.rar (files and folders).
-        const toRar = [...targets.files, ...targets.dirs]; // TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
+        const toRar = [...targets.files, ...targets.dirs]; //TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
         createTmRarFromDroppedItems(toRar, !!targets.singleTm);
     }
     else if (targets.dirs.length) {
@@ -31,7 +26,7 @@ async function main() {
             handleFolder(dir);
         }
     } else {
-        throw newErrorArgs(`Specify at leats one folder or files name to process.`);
+        throw newErrorArgs(`Specify at leats one folder or file names to process.`);
     }
 
     notes.show();
