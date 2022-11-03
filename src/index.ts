@@ -3,29 +3,30 @@ import path from 'path';
 import chalk from 'chalk';
 import rimraf from 'rimraf';
 import { newErrorArgs, exitProcess } from './utils/utils-errors';
-import { osStuff } from './utils/utils-os';
+import { OsStuff } from './utils/utils-os';
 import { appUtils, fnames } from './app/utils-app';
 import { exist } from './utils/unique-names';
-import { help, notes } from './app/help';
+import { help } from './app/app-help';
 import { getAndCheckArg, StartArgs } from './app/app-args';
+import { notes } from './app/app-notes';
 
 function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>
 
     // 1. Get folders and files inside the target folder.
-    let filesAndFolders: osStuff.FolderItem = osStuff.collectDirItems(targetFolder);
+    let filesAndFolders: OsStuff.FolderItem = OsStuff.collectDirItems(targetFolder);
 
     // 2. Check that we don't have tm.rar already.
-    let hasTmRar = filesAndFolders.files.find((fileItem: osStuff.FileItem) => fileItem.short.toLowerCase() === 'tm.rar');
+    let hasTmRar = filesAndFolders.files.find((fileItem: OsStuff.FileItem) => fileItem.short.toLowerCase() === 'tm.rar');
     if (hasTmRar) {
         notes.addProcessed(`    ${targetFolder} <- skipped`);
         return;
     }
 
     // 3. Get what we have now inside this folder.
-    type FItem = osStuff.FileItem & { ext: fnames.extType; };
+    type FItem = OsStuff.FileItem & { ext: fnames.extType; };
 
-    let fItems: FItem[] = filesAndFolders.files.map((fileItem: osStuff.FileItem) => ({ ...fileItem, ext: fnames.castFileExtension(path.extname(fileItem.short)) }));
+    let fItems: FItem[] = filesAndFolders.files.map((fileItem: OsStuff.FileItem) => ({ ...fileItem, ext: fnames.castFileExtension(path.extname(fileItem.short)) }));
 
     // 4. Build dirs.txt, .rar content, and move single folder content up.
 
@@ -58,21 +59,21 @@ function handleFolder(targetFolder: string): void {
 
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
 
-    let main: osStuff.FolderItem = osStuff.collectDirItems(targetFolder);
+    let main: OsStuff.FolderItem = OsStuff.collectDirItems(targetFolder);
     if (main.subs.length === 1 && main.files.length === 1) {
         try {
             let sub = main.subs[0];
 
-            let hasDublicates = osStuff.hasDuplicates(main, sub);
+            let hasDublicates = OsStuff.hasDuplicates(main, sub);
             if (hasDublicates) {
                 notes.add(`--- INFO: Not moving content up (folder a has some duplicated names from folder b)\n    a:${main.name}\n    b:${sub.name}`);
                 return;
             }
 
-            osStuff.moveContentUp(sub);
+            OsStuff.moveContentUp(sub);
 
             let dirToRemove = sub.name;
-            if (osStuff.nDirent(dirToRemove)) {
+            if (OsStuff.nDirent(dirToRemove)) {
                 notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${dirToRemove}`);
                 return;
             }
@@ -113,10 +114,10 @@ function createTmRarFromDroppedItems(filesToRar: string[], singleTm: boolean): v
         return;
     }
 
-    if (osStuff.nDirent(root) === 1) {
-        osStuff.moveContentUp(osStuff.collectDirItems(root));
+    if (OsStuff.nDirent(root) === 1) {
+        OsStuff.moveContentUp(OsStuff.collectDirItems(root));
 
-        if (osStuff.nDirent(root)) {
+        if (OsStuff.nDirent(root)) {
             notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${root}`);
             return;
         }
@@ -140,14 +141,14 @@ function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
             };
         } else {
             // 2. Get folders of single top folder and pretend we got list of folders.
-            const root: osStuff.FolderItem = osStuff.collectDirItems(singleTopdir);
+            const root: OsStuff.FolderItem = OsStuff.collectDirItems(singleTopdir);
             if (root.files.length) {
                 // This is not an error, just a regular case.
                 //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
             } else {
                 return {
                     files: [],
-                    dirs: root.subs.map((_: osStuff.FolderItem) => _.name),
+                    dirs: root.subs.map((_: OsStuff.FolderItem) => _.name),
                 };
             }
         }
