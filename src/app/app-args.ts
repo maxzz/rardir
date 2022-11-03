@@ -1,5 +1,7 @@
+import fs from "fs";
 import { exist } from "../utils/unique-names";
 import { newErrorArgs } from "../utils/utils-errors";
+import { OsStuff } from "../utils/utils-os";
 
 export type StartArgs = {
     files: string[];
@@ -36,4 +38,34 @@ export function getAndCheckArg(): StartArgs {
     }
 
     return rv;
+}
+
+export function singleTopFolderWoFilesCase(targets: StartArgs): StartArgs {
+    // Special case: single top folder wo/ files inside.
+    // If we have a single top folder and no top files w/ drag&drop then check what we have inside.
+    if (targets.dirs.length === 1 && !targets.files.length) {
+        const singleTopdir = targets.dirs[0];
+
+        if (path.basename(singleTopdir).toLowerCase() === 'tm') {
+            // 1. Get files of single 'tm' folder and continue as dnd w/ only files.
+            return {
+                files: fs.readdirSync(singleTopdir).map(_ => path.join(singleTopdir, _)),
+                dirs: [],
+                singleTm: true,
+            };
+        } else {
+            // 2. Get folders of single top folder and pretend we got list of folders.
+            const root: OsStuff.FolderItem = OsStuff.collectDirItems(singleTopdir);
+            if (root.files.length) {
+                // This is not an error, just a regular case.
+                //notes.add(`--- INFO: Skipped mixed content (folder(s) and file(s) in:)\n    b:${root.name}`);
+            } else {
+                return {
+                    files: [],
+                    dirs: root.subs.map((_: OsStuff.FolderItem) => _.name),
+                };
+            }
+        }
+    }
+    return targets;
 }

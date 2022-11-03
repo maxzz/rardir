@@ -2,9 +2,10 @@ import chalk from 'chalk';
 import { newErrorArgs, exitProcess } from './utils/utils-errors';
 import { appUtils } from './app/utils-app';
 import { help } from './app/app-help';
-import { getAndCheckArg, StartArgs } from './app/app-args';
+import { getAndCheckArg, singleTopFolderWoFilesCase, StartArgs } from './app/app-args';
 import { notes } from './app/app-notes';
-import { createTmRarFromDroppedItems, handleFolder, singleTopFolderWoFilesCase } from './app/app';
+import { handleFolder } from './app/app';
+import { createTmRarFromDroppedItems } from './app/utils-rar';
 
 async function main() {
     appUtils.findWinrar();
