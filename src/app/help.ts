@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { exitProcess } from "./utils-errors";
+import { exitProcess } from "../utils/utils-errors";
 let cfg = require('../package.json');
 const { name: programName } = cfg;
 

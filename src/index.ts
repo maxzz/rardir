@@ -2,11 +2,11 @@ import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
 import rimraf from 'rimraf';
-import { newErrorArgs, exitProcess } from './utils-errors';
-import { osStuff } from './utils-os';
-import { appUtils, fnames } from './utils-app';
-import { exist } from './unique-names';
-import { help, notes } from './help';
+import { newErrorArgs, exitProcess } from './utils/utils-errors';
+import { osStuff } from './utils/utils-os';
+import { appUtils, fnames } from './app/utils-app';
+import { exist } from './utils/unique-names';
+import { help, notes } from './app/help';
 
 function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>

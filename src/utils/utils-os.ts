@@ -92,4 +92,45 @@ export namespace osStuff {
             }
         });
     }
+
+    export function getParentFolder(fnames: string[]): string | undefined {
+        // 0. Returns fnames paretn folder or undefined if fnames from a different folders.
+
+        const res = fnames.reduce((acc, cur) => {
+            acc[path.dirname(cur)] = true;
+            return acc;
+        }, {} as Record<string, boolean>);
+
+        const keys = Object.keys(res);
+        return keys.length === 1 ? keys[0] : undefined;
+    }
+
+    export function stripBOM(content: string): string {
+        // Remove byte order marker. This catches EF BB BF (the UTF-8 BOM)
+        // because the buffer-to-string conversion in `fs.readFileSync()`
+        // translates it to FEFF, the UTF-16 BOM.
+        return content.charCodeAt(0) === 0xFEFF ? content.slice(1) : content;
+    }
+
+    export function filterByExtension(fnames: string[], ext: string): string[] { // ext = '.dpm'
+        return fnames.filter((item) => path.extname(item).toLowerCase() === ext);
+    }
+
+    export function mkdirSync(dir: string): void {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    export function fnameWoExt(fname: string): string {
+        return fname ? fname.substring(0, fname.lastIndexOf('.')) || fname : fname;
+    }
+
+    // it's better to use path.parse(path)
+    // export function replaceBasename(basename: string | undefined, cb: (v: string) => string = (v) => v): string | undefined {
+    //     // 0. It will replace basename; dir dropped and extension preserved.
+    //     if (basename) {
+    //         const ext = path.extname(basename);
+    //         return cb(path.basename(basename, ext)) + ext;
+    //     }
+    // }
+
 } //namespace osStuff
