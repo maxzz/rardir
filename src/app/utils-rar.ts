@@ -1,5 +1,5 @@
 import { notes } from "./app-notes";
-import { appUtils } from "./utils-app";
+import { appUtils } from "./utils-dir";
 import { exist } from "../utils/unique-names";
 import { OsStuff } from "../utils/utils-os";
 import rimraf from "rimraf";

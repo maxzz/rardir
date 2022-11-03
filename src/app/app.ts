@@ -1,10 +1,8 @@
-import fs from "fs";
 import rimraf from "rimraf";
-import { exist } from "../utils/unique-names";
 import { OsStuff } from "../utils/utils-os";
-import { StartArgs } from "./app-args";
 import { notes } from "./app-notes";
-import { appUtils, fnames } from "./utils-app";
+import { fnames } from "./utils-app";
+import { appUtils } from "./utils-dir";
 
 export function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>
