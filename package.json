@@ -25,19 +25,36 @@
     "bugs": {
         "url": "https://github.com/maxzz/rardir/issues"
     },
-    "scripts": {
-        "dev": "tsc",
-        "build": "rm -rf dist && tsc",
-        "prepublish": "yarn build",
-        "makebin": "yarn build && pkg -t host -o rardirj dist/index.js"
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^25.0.7",
+        "@rollup/plugin-node-resolve": "^15.2.3",
+        "@types/node": "20.12.7",
+        "builtin-modules": "^3.3.0",
+        "nexe": "4.0.0-rc.6",
+        "pkg": "^5.8.1",
+        "rollup": "^4.17.1"
     },
     "dependencies": {
-        "chalk": "4.1.2",
-        "minimist": "1.2.6",
-        "rimraf": "^3.0.2"
+        "minimist": "1.2.8",
+        "node-chalk": "^5.3.2",
+        "rimraf": "^5.0.5"
     },
-    "devDependencies": {
-        "@types/node": "18.7.14",
-        "@types/rimraf": "3.0.2"
+    "scripts": {
+        "dev": "tsc",
+        "build2": "rm -rf dist && tsc",
+        "build": "rm -rf dist && rollup -c",
+
+        "prepublish": "pnpm build",
+        
+        "ma": "pnpm build && pkg -t node18-win-x64 -o rardirj dist/index.js",
+        
+        "makebin": "pnpm build && pkg -t host -o rardirj dist/index.js",
+
+        "exe3": "pnpm build && nexe -t host -o rardirj2 dist/index.js --build",
+        "exe4": "pnpm build && nexe -t host -o rardirj2 dist/index.js",
+        "exe5": "pnpm build && nexe -t host -o rardirj2 dist/index.js",
+        "exe6": "pnpm build && nexe -t node18-win-x64 -o rardir7 all.js",
+
+        "exe": "rollup -c && pkg -t node18-win-x64 -o rardirj8 dist/all.js"
     }
 }

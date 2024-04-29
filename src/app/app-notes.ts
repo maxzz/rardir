@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import chalk from "node-chalk";
 import { exitProcess } from "../utils/utils-errors";
 import { programName } from "./app-help";
 

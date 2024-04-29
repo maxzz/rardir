@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import chalk from "node-chalk";
 import fs from 'fs';
 
 export namespace OsStuff {

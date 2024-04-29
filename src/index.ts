@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import chalk from "node-chalk";
 import { newErrorArgs, exitProcess } from './utils/utils-errors';
 import { help } from './app/app-help';
 import { getAndCheckArg, singleTopFolderWoFilesCase, StartArgs } from './app/app-args';
