@@ -28,8 +28,8 @@
     "scripts": {
         "dev": "tsc",
         "build": "rm -rf dist && tsc",
-        "prepublish": "yarn build",
-        "makebin": "yarn build && pkg -t host -o rardirj dist/index.js"
+        "prepublish": "pnpm build",
+        "makebin": "pnpm build && pkg -t node18-win-x64 -o rardirj dist/index.js"
     },
     "dependencies": {
         "chalk": "4.1.2",
