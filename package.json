@@ -6,6 +6,7 @@
     "license": "MIT",
     "main": "dist/cli.js",
     "bin": "dist/cli.js",
+    "type": "module",
     "files": [
         "dist/**/*"
     ],
@@ -27,7 +28,9 @@
     },
     "devDependencies": {
         "@rollup/plugin-commonjs": "^25.0.7",
+        "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-node-resolve": "^15.2.3",
+        "@types/minimist": "^1.2.5",
         "@types/node": "20.12.7",
         "builtin-modules": "^3.3.0",
         "nexe": "4.0.0-rc.6",
@@ -41,20 +44,8 @@
     },
     "scripts": {
         "dev": "tsc",
-        "build2": "rm -rf dist && tsc",
-        "build": "rm -rf dist && rollup -c",
-
+        "build": "rm -rf dist && tsc && rollup -c",
         "prepublish": "pnpm build",
-        
-        "ma": "pnpm build && pkg -t node18-win-x64 -o rardirj dist/index.js",
-        
-        "makebin": "pnpm build && pkg -t host -o rardirj dist/index.js",
-
-        "exe3": "pnpm build && nexe -t host -o rardirj2 dist/index.js --build",
-        "exe4": "pnpm build && nexe -t host -o rardirj2 dist/index.js",
-        "exe5": "pnpm build && nexe -t host -o rardirj2 dist/index.js",
-        "exe6": "pnpm build && nexe -t node18-win-x64 -o rardir7 all.js",
-
-        "exe": "rollup -c && pkg -t node18-win-x64 -o rardirj8 dist/all.js"
+        "exe": "pnpm build && pkg -t node18-win-x64 -o rardirj24 dist/all.js"
     }
 }

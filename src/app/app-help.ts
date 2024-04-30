@@ -1,7 +1,10 @@
 import chalk from "node-chalk";
 import { exitProcess } from "../utils/utils-errors";
 
-let cfg = require('../package.json');
+import cfg from "../../package.json";
+
+//let cfg = require('../package.json');
+
 export const { name: programName } = cfg;
 
 export function help() {

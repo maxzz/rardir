@@ -2,7 +2,7 @@ import { notes } from "./app-notes";
 import { appUtils } from "./utils-dir";
 import { exist } from "../utils/unique-names";
 import { OsStuff } from "../utils/utils-os";
-import rimraf from "rimraf";
+import { rimraf } from "rimraf";
 
 export function createTmRarFromDroppedItems(filesToRar: string[], singleTm: boolean): void {
     // 0. Simulate rardir behaviour. Files should be in the same folder.

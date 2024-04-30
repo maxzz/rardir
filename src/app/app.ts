@@ -1,4 +1,4 @@
-import rimraf from "rimraf";
+import { rimraf } from "rimraf";
 import { OsStuff } from "../utils/utils-os";
 import { notes } from "./app-notes";
 import { fnames } from "./utils-app";

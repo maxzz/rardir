@@ -36,7 +36,7 @@ async function main() {
 main().catch(async (error) => {
     error.args && help(); // Show help if arguments are invalid
     
-    const msg = chalk[error.args ? 'yellow' : 'red'](`\n${error.message}`);
+    const msg = chalk[error.args ? 'yellow' : 'red'](`\ntm:\n${error.message}`);
     await exitProcess(1, `${notes.buildMessage()}${msg}`);
 });
 

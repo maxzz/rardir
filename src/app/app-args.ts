@@ -1,7 +1,9 @@
 import fs from "fs";
+import path from "path";
 import { exist } from "../utils/unique-names";
 import { newErrorArgs } from "../utils/utils-errors";
 import { OsStuff } from "../utils/utils-os";
+import minimist from "minimist";
 
 export type StartArgs = {
     files: string[];
@@ -10,7 +12,8 @@ export type StartArgs = {
 };
 
 export function getAndCheckArg(): StartArgs {
-    let args = require('minimist')(process.argv.slice(2), {
+    // let args = require('minimist')(process.argv.slice(2), {
+    let args = minimist(process.argv.slice(2), {
     });
 
     // console.log(`args ${JSON.stringify(args, null, 4)}`);

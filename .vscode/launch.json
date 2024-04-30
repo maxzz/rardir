@@ -11,7 +11,8 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}/dist/index.js",
+            // "program": "${workspaceFolder}/dist/all.mjs",
+            "program": "${workspaceFolder}/dist/src/index.js",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
@@ -31,7 +32,10 @@
                 // "C:/Users/maxzz/Desktop/Web Scrape Anything With JavaScript - 2020/1.mht",
 
                 // "E:/E/[5] fav movies 2/Криминальное чтиво - Pulp Fiction - 1994/tm",
-                "C:/Users/maxzz/Desktop/1/english4it - English For IT Communication - 2021",
+                
+                // "C:/Users/maxzz/Desktop/1/english4it - English For IT Communication - 2021",
+                "C:/Users/maxzz/Desktop",
+
             ],
             //"console": "externalTerminal"
             "outputCapture": "std"
