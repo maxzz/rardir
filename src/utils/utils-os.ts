@@ -19,7 +19,7 @@ export namespace OsStuff {
 
     function recursivelyCollectFiles(dir: string, rv: FolderItem, recursive: boolean): void {
 
-        console.log('recursivelyCollectFiles', dir); // dir.startsWith('C:\\Users\\maxzz\\Desktop\\New\\[0] todo')
+        //console.log('recursivelyCollectFiles', dir); // cond. break: dir.startsWith('C:\\Users\\maxzz\\Desktop\\New\\[0] todo')
 
         const filenames = fs.readdirSync(dir)
             .map((item) => {
