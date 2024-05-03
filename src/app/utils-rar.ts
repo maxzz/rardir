@@ -1,8 +1,9 @@
-import { notes } from "./app-notes";
-import { appUtils } from "./utils-dir";
-import { exist } from "../utils/unique-names";
-import { OsStuff } from "../utils/utils-os";
+import path from "path";
 import { rimraf } from "rimraf";
+import { notes } from "./app-notes.js";
+import { appUtils } from "./utils-dir.js";
+import { exist } from "../utils/unique-names.js";
+import { OsStuff } from "../utils/utils-os.js";
 
 export function createTmRarFromDroppedItems(filesToRar: string[], singleTm: boolean): void {
     // 0. Simulate rardir behaviour. Files should be in the same folder.

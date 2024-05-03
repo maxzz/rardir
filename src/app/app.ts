@@ -1,8 +1,9 @@
+import path from "path";
 import { rimraf } from "rimraf";
-import { OsStuff } from "../utils/utils-os";
-import { notes } from "./app-notes";
-import { fnames } from "./utils-app";
-import { appUtils } from "./utils-dir";
+import { OsStuff } from "../utils/utils-os.js";
+import { notes } from "./app-notes.js";
+import { fnames } from "./utils-app.js";
+import { appUtils } from "./utils-dir.js";
 
 export function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>

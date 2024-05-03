@@ -1,7 +1,7 @@
 import chalk from "node-chalk";
-import { exitProcess } from "../utils/utils-errors";
+import { exitProcess } from "../utils/utils-errors.js";
 
-import cfg from "../../package.json";
+import cfg from "../../package.json" assert { type: 'json' };
 
 //let cfg = require('../package.json');
 

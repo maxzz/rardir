@@ -35,7 +35,8 @@
         "builtin-modules": "^3.3.0",
         "nexe": "4.0.0-rc.6",
         "pkg": "^5.8.1",
-        "rollup": "^4.17.1"
+        "rollup": "^4.17.1",
+        "typescript": "^5.4.5"
     },
     "dependencies": {
         "minimist": "1.2.8",

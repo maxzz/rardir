@@ -1,8 +1,8 @@
 import fs from "fs";
 import path from "path";
-import { exist } from "../utils/unique-names";
-import { newErrorArgs } from "../utils/utils-errors";
-import { OsStuff } from "../utils/utils-os";
+import { exist } from "../utils/unique-names.js";
+import { newErrorArgs } from "../utils/utils-errors.js";
+import { OsStuff } from "../utils/utils-os.js";
 import minimist from "minimist";
 
 export type StartArgs = {
