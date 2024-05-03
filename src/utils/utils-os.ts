@@ -18,10 +18,13 @@ export namespace OsStuff {
     };
 
     function recursivelyCollectFiles(dir: string, rv: FolderItem, recursive: boolean): void {
+        
+        console.log('recursivelyCollectFiles', dir); // dir.startsWith('C:\\Users\\maxzz\\Desktop\\New\\[0] todo')
+
         const filenames = fs.readdirSync(dir)
             .map((item) => {
                 let fname = path.join(dir, item);
-                let st = fs.statSync(fname);
+                let st = fs.statSync(fname); //this will fail if name has special (emoji) characters
                 if (st.isDirectory()) {
                     if (recursive) {
                         let newFolder: FolderItem = {
