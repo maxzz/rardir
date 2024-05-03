@@ -18,37 +18,43 @@ export namespace OsStuff {
     };
 
     function recursivelyCollectFiles(dir: string, rv: FolderItem, recursive: boolean): void {
-        
+
         console.log('recursivelyCollectFiles', dir); // dir.startsWith('C:\\Users\\maxzz\\Desktop\\New\\[0] todo')
 
         const filenames = fs.readdirSync(dir)
             .map((item) => {
                 let fname = path.join(dir, item);
-                let st = fs.statSync(fname); //this will fail if name has special (emoji) characters
-                if (st.isDirectory()) {
-                    if (recursive) {
-                        let newFolder: FolderItem = {
-                            name: fname,
-                            files: [],
-                            subs: [],
-                        };
-                        recursivelyCollectFiles(fname, newFolder, recursive);
-                        if (newFolder.files.length || newFolder.subs.length) {
-                            rv.subs.push(newFolder);
+                try {
+                    let st = fs.statSync(fname); //this will fail if name has special (emoji) characters
+                    if (st.isDirectory()) {
+                        if (recursive) {
+                            let newFolder: FolderItem = {
+                                name: fname,
+                                files: [],
+                                subs: [],
+                            };
+                            recursivelyCollectFiles(fname, newFolder, recursive);
+                            if (newFolder.files.length || newFolder.subs.length) {
+                                rv.subs.push(newFolder);
+                            }
                         }
+                    } else if (st.isFile()) {
+                        let newFile: FileItem = {
+                            short: item,
+                            btime: st.birthtime,
+                            ...(st.birthtime !== st.mtime && { mtime: st.mtime }),
+                            size: st.size,
+                        };
+                        return newFile;
                     }
-                } else if (st.isFile()) {
-                    let newFile: FileItem = {
-                        short: item,
-                        btime: st.birthtime,
-                        ...(st.birthtime !== st.mtime && { mtime: st.mtime }),
-                        size: st.size,
-                    };
-                    return newFile;
+                } catch (error) {
+                    console.log('---------- skip', fname);
                 }
             }).filter(Boolean);
         rv.files.push(...filenames);
     }
+
+    //TODO: don't collect all files from desktop
 
     export function collectDirItems(dir: string): FolderItem {
         let rv: FolderItem = {
