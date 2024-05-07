@@ -1,9 +1,9 @@
 import path from "path";
 import { rimraf } from "rimraf";
 import { OsStuff } from "../utils/utils-os.js";
-import { notes } from "./app-notes.js";
-import { fnames } from "./utils-app.js";
-import { AppUtils } from "./utils-dir.js";
+import { notes } from "../app-utils/app-notes.js";
+import { fnames } from "../app-utils/utils-app.js";
+import { AppUtils } from "../app-utils/utils-dir.js";
 
 type FItem = OsStuff.FileItem & { ext: fnames.extType; };
 
@@ -24,53 +24,8 @@ export function handleFolder(targetFolder: string): void {
         return;
     }
 
-    /*
-    // 3. Get what we have now inside this folder.
-    //type FItem = OsStuff.FileItem & { ext: fnames.extType; };
-
-    let fItems: FItem[] = filesAndFolders.files.map(
-        (fileItem: OsStuff.FileItem) => {
-            return {
-                ...fileItem,
-                ext: fnames.castFileExtension(path.extname(fileItem.short)),
-            };
-        }
-    );
-
-    // 4. Build dirs.txt, .rar content, and move single folder content up.
-
-    // 4.1. Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
-    let tors: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.tor);
-    let urls: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.url);
-    let mhts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
-    let txts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.txt);
-
-    let ourFolder = tors.length && urls.length || mhts.length && urls.length;
-    if (!ourFolder) {
-        notes.addProcessed(`    ${targetFolder} <- skipped`);
-        return;
-    }
-
-    notes.addProcessed(`    ${targetFolder}`);
-
-    // 4.2. Move to .rar top level files.
-    let rootDir2Rar = filesAndFolders.name;
-    let fullNameRar = path.join(rootDir2Rar, 'tm.rar');
-
-    let smallFiles = [...tors, ...urls, ...mhts, ...txts].filter((_: FItem) => _.size < 5000000); // Filter out files more than 5MB (some mht are > 5MB)
-    let filesToRar: string[] = smallFiles.map(_ => _.short);
-
-    // 4.3. Create dirs.txt and add to tm.rar.
-    AppUtils.execCmdDir(targetFolder);
-    filesToRar.push(AppUtils.fnameDirsTxt);
-
-    AppUtils.createRarFile(fullNameRar, rootDir2Rar, filesToRar);
-    */
-
-    // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
     moveFolderUpIfPossible(targetFolder);
-
-} //handleFolder()
+}
 
 function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.FolderItem): true | undefined {
 
@@ -85,10 +40,10 @@ function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.FolderIte
     );
 
     // 4.1. Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
-    let tors: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.tor);
-    let urls: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.url);
-    let mhts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
-    let txts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.txt);
+    let tors: FItem[] = fItems.filter((fitem: FItem) => fitem.ext === fnames.extType.tor);
+    let urls: FItem[] = fItems.filter((fitem: FItem) => fitem.ext === fnames.extType.url);
+    let mhts: FItem[] = fItems.filter((fitem: FItem) => fitem.ext === fnames.extType.mht);
+    let txts: FItem[] = fItems.filter((fitem: FItem) => fitem.ext === fnames.extType.txt);
 
     let ourFolder = tors.length && urls.length || mhts.length && urls.length;
     if (!ourFolder) {
@@ -96,15 +51,14 @@ function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.FolderIte
         return;
     }
 
-
     notes.addProcessed(`    ${targetFolder}`);
 
     // 4.2. Move to .rar top level files.
     let rootDir2Rar = filesAndFolders.name;
     let fullNameRar = path.join(rootDir2Rar, 'tm.rar');
 
-    let smallFiles = [...tors, ...urls, ...mhts, ...txts].filter((_: FItem) => _.size < 5000000); // Filter out files more than 5MB (some mht are > 5MB)
-    let filesToRar: string[] = smallFiles.map(_ => _.short);
+    let smallFiles = [...tors, ...urls, ...mhts, ...txts].filter((fitem: FItem) => fitem.size < 5000000); // Filter out files more than 5MB (some mht are > 5MB)
+    let filesToRar: string[] = smallFiles.map((fitem) => fitem.short);
 
     // 4.3. Create dirs.txt and add to tm.rar.
     AppUtils.execCmdDir(targetFolder);
@@ -116,6 +70,8 @@ function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.FolderIte
 }
 
 function moveFolderUpIfPossible(targetFolder: string) {
+    // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
+
     const main: OsStuff.FolderItem = OsStuff.collectDirItems(targetFolder);
 
     if (main.subs.length === 1 && main.files.length === 1) {
