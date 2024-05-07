@@ -5,6 +5,8 @@ import { notes } from "./app-notes.js";
 import { fnames } from "./utils-app.js";
 import { AppUtils } from "./utils-dir.js";
 
+type FItem = OsStuff.FileItem & { ext: fnames.extType; };
+
 export function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>
 
@@ -18,8 +20,13 @@ export function handleFolder(targetFolder: string): void {
         return;
     }
 
+    if (!createdRarFile(targetFolder, filesAndFolders)) {
+        return;
+    }
+
+    /*
     // 3. Get what we have now inside this folder.
-    type FItem = OsStuff.FileItem & { ext: fnames.extType; };
+    //type FItem = OsStuff.FileItem & { ext: fnames.extType; };
 
     let fItems: FItem[] = filesAndFolders.files.map(
         (fileItem: OsStuff.FileItem) => {
@@ -58,11 +65,55 @@ export function handleFolder(targetFolder: string): void {
     filesToRar.push(AppUtils.fnameDirsTxt);
 
     AppUtils.createRarFile(fullNameRar, rootDir2Rar, filesToRar);
+    */
 
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
     moveFolderUpIfPossible(targetFolder);
 
 } //handleFolder()
+
+function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.FolderItem): true | undefined {
+
+    // 3. Get what we have now inside this folder.
+    let fItems: FItem[] = filesAndFolders.files.map(
+        (fileItem: OsStuff.FileItem) => {
+            return {
+                ...fileItem,
+                ext: fnames.castFileExtension(path.extname(fileItem.short)),
+            };
+        }
+    );
+
+    // 4.1. Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional
+    let tors: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.tor);
+    let urls: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.url);
+    let mhts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.mht);
+    let txts: FItem[] = fItems.filter((_: FItem) => _.ext === fnames.extType.txt);
+
+    let ourFolder = tors.length && urls.length || mhts.length && urls.length;
+    if (!ourFolder) {
+        notes.addProcessed(`    ${targetFolder} <- skipped`);
+        return;
+    }
+
+
+    notes.addProcessed(`    ${targetFolder}`);
+
+    // 4.2. Move to .rar top level files.
+    let rootDir2Rar = filesAndFolders.name;
+    let fullNameRar = path.join(rootDir2Rar, 'tm.rar');
+
+    let smallFiles = [...tors, ...urls, ...mhts, ...txts].filter((_: FItem) => _.size < 5000000); // Filter out files more than 5MB (some mht are > 5MB)
+    let filesToRar: string[] = smallFiles.map(_ => _.short);
+
+    // 4.3. Create dirs.txt and add to tm.rar.
+    AppUtils.execCmdDir(targetFolder);
+    filesToRar.push(AppUtils.fnameDirsTxt);
+
+    AppUtils.createRarFile(fullNameRar, rootDir2Rar, filesToRar);
+
+    return true; // as continue
+}
 
 function moveFolderUpIfPossible(targetFolder: string) {
     const main: OsStuff.FolderItem = OsStuff.collectDirItems(targetFolder);
