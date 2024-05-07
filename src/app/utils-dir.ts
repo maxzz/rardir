@@ -1,7 +1,8 @@
 import path from "path";
 import { execSync } from "child_process";
 
-export namespace appUtils {
+export namespace AppUtils {
+
     export const fnameDirsTxt = 'z_dirs.txt';
 
     export function execCmdDir(folderToDir: string, folderToOut?: string) {
@@ -40,4 +41,5 @@ export namespace appUtils {
             throw new Error(`${error}\nMake path to winrar.exe as part of PATH`);
         }
     }
+
 }

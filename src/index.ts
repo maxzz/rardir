@@ -5,10 +5,10 @@ import { getAndCheckArg, singleTopFolderWoFilesCase, StartArgs } from './app/app
 import { notes } from './app/app-notes.js';
 import { handleFolder } from './app/app.js';
 import { createTmRarFromDroppedItems } from './app/utils-rar.js';
-import { appUtils } from './app/utils-dir.js';
+import { AppUtils } from './app/utils-dir.js';
 
 async function main() {
-    appUtils.findWinrar();
+    AppUtils.findWinrar();
 
     let targets: StartArgs = getAndCheckArg();
     targets = singleTopFolderWoFilesCase(targets);

@@ -13,6 +13,9 @@
             ],
             // "program": "${workspaceFolder}/dist/all.mjs",
             "program": "${workspaceFolder}/dist/src/index.js",
+            // "runtimeArgs": [
+            //     "--trace-warnings"
+            // ],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
@@ -34,7 +37,7 @@
                 // "E:/E/[5] fav movies 2/Криминальное чтиво - Pulp Fiction - 1994/tm",
                 
                 // "C:/Users/maxzz/Desktop/1/english4it - English For IT Communication - 2021",
-                "C:/Users/maxzz/Desktop",
+                "C:/Users/maxzz/Desktop/test1",
 
             ],
             //"console": "externalTerminal"

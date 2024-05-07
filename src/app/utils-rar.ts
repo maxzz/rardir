@@ -1,7 +1,7 @@
 import path from "path";
 import { rimraf } from "rimraf";
 import { notes } from "./app-notes.js";
-import { appUtils } from "./utils-dir.js";
+import { AppUtils } from "./utils-dir.js";
 import { exist } from "../utils/unique-names.js";
 import { OsStuff } from "../utils/utils-os.js";
 
@@ -19,10 +19,10 @@ export function createTmRarFromDroppedItems(filesToRar: string[], singleTm: bool
 
     // Create dirs.txt and add to tm.rar.
 
-    appUtils.execCmdDir(singleTm ? path.dirname(root) : root, root); // make dir on parent folder in singleTm case.
-    files.push(appUtils.fnameDirsTxt);
+    AppUtils.execCmdDir(singleTm ? path.dirname(root) : root, root); // make dir on parent folder in singleTm case.
+    files.push(AppUtils.fnameDirsTxt);
 
-    appUtils.createRarFile(fnameRar, root, files);
+    AppUtils.createRarFile(fnameRar, root, files);
 
     // If we moved eveything inside tm.rar and parent folder name is 'tm' (and parent does not have tm.rar) then move tm.rar up and delete tm folder.
 

@@ -3,7 +3,7 @@ import { rimraf } from "rimraf";
 import { OsStuff } from "../utils/utils-os.js";
 import { notes } from "./app-notes.js";
 import { fnames } from "./utils-app.js";
-import { appUtils } from "./utils-dir.js";
+import { AppUtils } from "./utils-dir.js";
 
 export function handleFolder(targetFolder: string): void {
     // 0. Check for combination: url + mht + torrent + !tm.rar + !<media files>
@@ -21,7 +21,14 @@ export function handleFolder(targetFolder: string): void {
     // 3. Get what we have now inside this folder.
     type FItem = OsStuff.FileItem & { ext: fnames.extType; };
 
-    let fItems: FItem[] = filesAndFolders.files.map((fileItem: OsStuff.FileItem) => ({ ...fileItem, ext: fnames.castFileExtension(path.extname(fileItem.short)) }));
+    let fItems: FItem[] = filesAndFolders.files.map(
+        (fileItem: OsStuff.FileItem) => {
+            return {
+                ...fileItem,
+                ext: fnames.castFileExtension(path.extname(fileItem.short)),
+            };
+        }
+    );
 
     // 4. Build dirs.txt, .rar content, and move single folder content up.
 
@@ -47,14 +54,19 @@ export function handleFolder(targetFolder: string): void {
     let filesToRar: string[] = smallFiles.map(_ => _.short);
 
     // 4.3. Create dirs.txt and add to tm.rar.
-    appUtils.execCmdDir(targetFolder);
-    filesToRar.push(appUtils.fnameDirsTxt);
+    AppUtils.execCmdDir(targetFolder);
+    filesToRar.push(AppUtils.fnameDirsTxt);
 
-    appUtils.createRarFile(fullNameRar, rootDir2Rar, filesToRar);
+    AppUtils.createRarFile(fullNameRar, rootDir2Rar, filesToRar);
 
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
+    moveFolderUpIfPossible(targetFolder);
 
-    let main: OsStuff.FolderItem = OsStuff.collectDirItems(targetFolder);
+} //handleFolder()
+
+function moveFolderUpIfPossible(targetFolder: string) {
+    const main: OsStuff.FolderItem = OsStuff.collectDirItems(targetFolder);
+
     if (main.subs.length === 1 && main.files.length === 1) {
         try {
             let sub = main.subs[0];
@@ -79,5 +91,5 @@ export function handleFolder(targetFolder: string): void {
             notes.add(`--- Info: Failed to move up the folder content\n    ${error}`);
             //notes.add(`--- Info: Failed to move up the folder content\n    ${error}\n    Continue with the next commnad line params`);
         }
-    }//5.
-} //handleFolder()
+    }
+}

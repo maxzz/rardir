@@ -47,6 +47,10 @@
         "dev": "tsc",
         "build": "rm -rf dist && tsc && rollup -c",
         "prepublish": "pnpm build",
-        "exe": "pnpm build && pkg -t node18-win-x64 -o rardirj24 dist/all.js"
+        
+        "exe-no": "pnpm build && pkg -o rardirj24 dist/all.mjs -t node18-win-x64",
+        "ne2-no": "pnpm build && nexe -o rardirj25.exe -i dist/all.mjs --build",
+        "ne3-no": "pnpm build && nexe -o rardirj25.exe -i dist/all.mjs -t host --build",
+        "ne-no": "pnpm build && nexe -o rardirj25.exe -i dist/all.mjs -t windows"
     }
 }
