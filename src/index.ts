@@ -3,7 +3,7 @@ import { newErrorArgs, exitProcess } from './utils/utils-errors.js';
 import { help } from './app-utils/app-help.js';
 import { getAndCheckArg, singleTopFolderWoFilesCase, StartArgs } from './app-utils/app-args.js';
 import { notes } from './app-utils/app-notes.js';
-import { handleFolder } from './app/app.js';
+import { handleFolder } from './app/0-all.js';
 import { createTmRarFromDroppedItems } from './app-utils/utils-rar.js';
 import { AppUtils } from './app-utils/utils-dir.js';
 

@@ -1,7 +1,7 @@
 import { OsStuff } from "../utils/utils-os.js";
-import { notes } from "../app-utils/app-notes.js";
-import { moveFolderUpIfPossible } from "./moveFolderUpIfPossible.js";
-import { createdRarFile } from "./createdRarFile.js";
+import { moveFolderUpIfPossible } from "./3-move-folder-up-if-possible.js";
+import { createdRarFile } from "./2-created-rar-file.js";
+import { continueIfNoTmRar } from "./1-continue-if-no-tm-rar.js";
 
 /**
  * Check for combination: url + mht + torrent + !tm.rar + !<media files>
@@ -22,13 +22,4 @@ export function handleFolder(targetFolder: string): void {
     moveFolderUpIfPossible(targetFolder);
 }
 
-function continueIfNoTmRar(targetFolder: string, files: OsStuff.FileItem[]): true | undefined {
 
-    let hasTmRar = files.find((fileItem: OsStuff.FileItem) => fileItem.short.toLowerCase() === 'tm.rar');
-    if (hasTmRar) {
-        notes.addProcessed(`    ${targetFolder} <- skipped`);
-        return;
-    }
-
-    return true;
-}
