@@ -1,6 +1,6 @@
 import { OsStuff } from "../utils/utils-os.js";
 import { moveFolderUpIfPossible } from "./3-move-folder-up-if-possible.js";
-import { createdRarFile } from "./2-created-rar-file.js";
+import { createdRarFile } from "./2-created-rar-file/index.js";
 import { continueIfNoTmRar } from "./1-continue-if-no-tm-rar.js";
 
 /**

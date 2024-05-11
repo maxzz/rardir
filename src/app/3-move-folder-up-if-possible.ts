@@ -4,6 +4,7 @@ import { notes } from "../app-utils/app-notes.js";
 
 export function moveFolderUpIfPossible(targetFolder: string) {
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
+    
     const main: OsStuff.FolderItem = OsStuff.collectDirItems(targetFolder);
 
     if (main.subs.length === 1 && main.files.length === 1) {
