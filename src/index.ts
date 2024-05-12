@@ -1,7 +1,7 @@
 import chalk from "node-chalk";
 import { newErrorArgs, exitProcess } from './utils/utils-errors.js';
 import { help } from './app-utils/app-help.js';
-import { getAndCheckArg, singleTopFolderWoFilesCase, StartArgs } from './app-utils/app-args.js';
+import { StartArgs, getAndCheckArg, correctIfTopFolderWoFiles } from "./app-utils/1-args/index.js";
 import { notes } from './app-utils/app-notes.js';
 import { handleFolder } from './app/0-all.js';
 import { createTmRarFromDroppedItems } from './app-utils/utils-rar.js';
@@ -11,7 +11,7 @@ async function main() {
     AppUtils.findWinrar();
 
     let targets: StartArgs = getAndCheckArg();
-    targets = singleTopFolderWoFilesCase(targets);
+    targets = correctIfTopFolderWoFiles(targets);
 
     // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
     // await exitProcess(0, '');
