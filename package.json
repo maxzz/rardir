@@ -31,23 +31,22 @@
         "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-node-resolve": "^15.2.3",
         "@types/minimist": "^1.2.5",
-        "@types/node": "20.12.7",
+        "@types/node": "20.12.11",
         "builtin-modules": "^3.3.0",
         "nexe": "4.0.0-rc.6",
         "pkg": "^5.8.1",
-        "rollup": "^4.17.1",
+        "rollup": "^4.17.2",
         "typescript": "^5.4.5"
     },
     "dependencies": {
         "minimist": "1.2.8",
         "node-chalk": "^5.3.2",
-        "rimraf": "^5.0.5"
+        "rimraf": "^5.0.6"
     },
     "scripts": {
-        "dev": "tsc",
+        "dev": "tsc -w",
         "build": "rm -rf dist && tsc && rollup -c",
         "prepublish": "pnpm build",
-        
         "exe-no": "pnpm build && pkg -o rardirj24 dist/all.mjs -t node18-win-x64",
         "ne2-no": "pnpm build && nexe -o rardirj25.exe -i dist/all.mjs --build",
         "ne3-no": "pnpm build && nexe -o rardirj25.exe -i dist/all.mjs -t host --build",
