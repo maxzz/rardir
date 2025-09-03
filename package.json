@@ -25,7 +25,7 @@
     "bugs": {
         "url": "https://github.com/maxzz/rardir/issues"
     },
-    "_type": "module",
+    "type": "module",
     "devDependencies": {
         "@rollup/plugin-commonjs": "^25.0.7",
         "@rollup/plugin-json": "^6.1.0",
