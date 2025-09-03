@@ -1,5 +1,5 @@
 import { notes } from "../../8-app-utils/app-notes";
-import { FileGroups } from "./1-file-groups";
+import { FileGroups } from "./1-get-file-groups";
 
 /**
  * Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional

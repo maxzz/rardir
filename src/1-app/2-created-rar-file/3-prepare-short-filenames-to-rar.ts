@@ -1,4 +1,4 @@
-import { FileGroups, FItem } from "./1-file-groups";
+import { FileGroups, FItem } from "./1-get-file-groups";
 
 export function prepareShortFilenamesToRar(fileGroups: FileGroups): string[] {
     const { tors, urls, mhts, txts } = fileGroups;
