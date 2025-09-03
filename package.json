@@ -6,7 +6,6 @@
     "license": "MIT",
     "main": "dist/cli.js",
     "bin": "dist/cli.js",
-    "type": "module",
     "files": [
         "dist/**/*"
     ],
@@ -26,6 +25,7 @@
     "bugs": {
         "url": "https://github.com/maxzz/rardir/issues"
     },
+    "_type": "module",
     "devDependencies": {
         "@rollup/plugin-commonjs": "^25.0.7",
         "@rollup/plugin-json": "^6.1.0",
