@@ -1,6 +1,6 @@
 import chalk from "node-chalk";
 import { help } from './8-app-utils/app-help';
-import { newErrorArgs, exitProcess } from './8-utils/utils-errors';
+import { newArgsError, exitProcess } from './8-utils/utils-errors';
 import { StartArgs, getAndCheckArg, correctIfTopFolderWoFiles } from "./2-args";
 import { notes } from './8-app-utils/app-notes';
 import { handleFolder } from './1-app/0-all';
@@ -27,7 +27,7 @@ async function main() {
             handleFolder(dir);
         }
     } else {
-        throw newErrorArgs(`Specify at leats one folder or file names to process.`);
+        throw newArgsError(`Specify at leats one folder or file names to process.`);
     }
 
     notes.show();

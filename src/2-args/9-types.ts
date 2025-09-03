@@ -1,4 +1,3 @@
-
 export type StartArgs = {
     files: string[];
     dirs: string[];

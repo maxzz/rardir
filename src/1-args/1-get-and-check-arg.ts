@@ -1,8 +1,7 @@
 import path from "path";
 import minimist from "minimist";
 import { type StartArgs } from "../2-args";
-import { exist } from "../8-utils/unique-names.js";
-import { newErrorArgs } from "../8-utils/utils-errors.js";
+import { exist, newArgsError } from "../8-utils";
 
 export function getAndCheckArg(): StartArgs {
     // let args = require('minimist')(process.argv.slice(2), {
@@ -27,7 +26,7 @@ export function getAndCheckArg(): StartArgs {
                 rv.files.push(current); // TODO: Check all files should have the same root folder. That is not possible with drag and drop, but still ...
             }
         } else {
-            throw newErrorArgs(`Target "${target}" does not exist.`);
+            throw newArgsError(`Target "${target}" does not exist.`);
         }
     }
 

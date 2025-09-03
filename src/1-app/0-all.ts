@@ -1,7 +1,7 @@
-import { OsStuff } from "../8-utils/utils-os";
-import { moveFolderUpIfPossible } from "./3-move-folder-up-if-possible";
-import { createdRarFile } from "../3-created-rar-file/index";
+import { OsStuff } from "../8-utils";
+import { createdRarFile } from "../3-created-rar-file";
 import { continueIfNoTmRar } from "./1-continue-if-no-tm-rar";
+import { moveFolderUpIfPossible } from "./3-move-folder-up-if-possible";
 
 /**
  * Check for combination: url + mht + torrent + !tm.rar + !<media files>

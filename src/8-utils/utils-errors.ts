@@ -24,7 +24,7 @@ interface ErrorArgs extends Error {
     args: boolean;
 }
 
-export function newErrorArgs(msg: string): ErrorArgs {
+export function newArgsError(msg: string): ErrorArgs {
     let error = new Error(msg) as ErrorArgs;
     error.args = true;
     return error;

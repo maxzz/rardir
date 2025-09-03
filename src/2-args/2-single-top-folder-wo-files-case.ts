@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { OsStuff } from "../8-utils/utils-os";
-import { StartArgs } from "./9-types";
+import { type StartArgs } from "./9-types";
+import { OsStuff } from "../8-utils";
 
 /**
  * Special case: single top folder wo/ files inside.

@@ -1,5 +1,5 @@
 import path from 'path';
-import {type Stats, statSync } from 'fs';
+import { type Stats, statSync } from 'fs';
 
 export function exist(name: string): Stats | undefined {
     try {
