@@ -22,35 +22,39 @@ export namespace OsStuff {
         //console.log('recursivelyCollectFiles', dir); // cond. break: dir.startsWith('C:\\Users\\maxzz\\Desktop\\New\\[0] todo')
 
         const filenames = fs.readdirSync(dir)
-            .map((item) => {
-                let fname = path.join(dir, item);
-                try {
-                    let st = fs.statSync(fname); //this will fail if name has special (emoji) characters
-                    if (st.isDirectory()) {
-                        if (recursive) {
-                            let newFolder: FolderItem = {
-                                name: fname,
-                                files: [],
-                                subs: [],
-                            };
-                            recursivelyCollectFiles(fname, newFolder, recursive);
-                            if (newFolder.files.length || newFolder.subs.length) {
-                                rv.subs.push(newFolder);
+            .map(
+                (item) => {
+                    let fname = path.join(dir, item);
+                    try {
+                        let st = fs.statSync(fname); //this will fail if name has special (emoji) characters
+                        if (st.isDirectory()) {
+                            if (recursive) {
+                                let newFolder: FolderItem = {
+                                    name: fname,
+                                    files: [],
+                                    subs: [],
+                                };
+                                recursivelyCollectFiles(fname, newFolder, recursive);
+                                if (newFolder.files.length || newFolder.subs.length) {
+                                    rv.subs.push(newFolder);
+                                }
                             }
+                        } else if (st.isFile()) {
+                            let newFile: FileItem = {
+                                short: item,
+                                btime: st.birthtime,
+                                ...(st.birthtime !== st.mtime && { mtime: st.mtime }),
+                                size: st.size,
+                            };
+                            return newFile;
                         }
-                    } else if (st.isFile()) {
-                        let newFile: FileItem = {
-                            short: item,
-                            btime: st.birthtime,
-                            ...(st.birthtime !== st.mtime && { mtime: st.mtime }),
-                            size: st.size,
-                        };
-                        return newFile;
+                    } catch (error) {
+                        console.log('---------- skip', fname);
                     }
-                } catch (error) {
-                    console.log('---------- skip', fname);
                 }
-            }).filter(Boolean);
+            )
+            .filter(Boolean);
+
         rv.files.push(...filenames);
     }
 
