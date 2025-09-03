@@ -5,6 +5,23 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "ts-node",
+            "type": "node",
+            "request": "launch",
+            "runtimeArgs": [
+                "${workspaceRoot}/node_modules/ts-node/dist/bin.js",
+
+                // "${workspaceRoot}/node_modules/ts-node/dist/bin-esm.js",
+                // "${workspaceRoot}/node_modules/ts-node/dist/bin.js", "--esm"
+                // "${workspaceRoot}/node_modules/ts-node/dist/bin.js", "--loader", "ts-node/esm",
+                // "-r", // "ts-node/register",
+            ],
+            "args": [
+                "${workspaceRoot}/src/index.ts"
+            ],
+            "cwd": "${workspaceRoot}/src",
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
@@ -42,18 +59,6 @@
             ],
             "console": "externalTerminal",
             "outputCapture": "std"
-        },
-        {
-            "name": "ts-node tester",
-            "type": "node",
-            "request": "launch",
-            "runtimeArgs": [
-                "${workspaceRoot}/node_modules/ts-node/dist/bin.js"
-            ],
-            "args": [
-                "${workspaceRoot}/src/index.ts"
-            ],
-            "cwd": "${workspaceRoot}/src",
         },
     ]
 }

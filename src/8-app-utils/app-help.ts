@@ -3,10 +3,10 @@ import chalk from "node-chalk";
 
 //import cfg from "../../package.json" assert { type: 'json' };
 
-//let cfg = require('../package.json');
+let cfg = require('../package.json');
 
-import fs from 'fs';
-const cfg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+// import fs from 'fs';
+// const cfg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 export const { name: programName } = cfg;
 

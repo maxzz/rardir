@@ -1,9 +1,9 @@
 import path from 'path';
-import fs from 'fs';
+import {type Stats, statSync } from 'fs';
 
-export function exist(name: string): fs.Stats | undefined {
+export function exist(name: string): Stats | undefined {
     try {
-        return fs.statSync(name);
+        return statSync(name);
     } catch (e) {
     }
 }
@@ -53,7 +53,7 @@ function ensureNameUnique(name: string, nameIsFname: boolean = true): string {
     // 0. Ensure that file/folder name is unique.
     let basename = '', ext = '', index: number = 0, initialized: boolean = false;
     while (1) {
-        let st: fs.Stats | undefined = exist(name);
+        let st: Stats | undefined = exist(name);
         if (!st || (st.isDirectory() === nameIsFname)) { // case if folder exist but we create file name.
             return name;
         }
