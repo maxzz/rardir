@@ -36,6 +36,7 @@
         "nexe": "4.0.0-rc.6",
         "pkg": "^5.8.1",
         "rollup": "^4.17.2",
+        "ts-node": "^10.9.2",
         "tsup": "^8.5.0",
         "typescript": "^5.4.5"
     },
@@ -45,9 +46,10 @@
         "rimraf": "^5.0.7"
     },
     "scripts": {
-        "dev": "tsc -w",
-        "build": "rm -rf dist && tsc && rollup -c",
-        "prepublish": "pnpm build",
+        "tsc": "tsc -w",
+        "build": "pnpm tsup",
+        "_build": "rm -rf dist && tsc && rollup -c",
+        "_prepublish": "pnpm build",
         "exe-no": "pnpm build && pkg -o rardirj24 dist/all.mjs -t node18-win-x64",
         "ne2-no": "pnpm build && nexe -o rardirj25.exe -i dist/all.mjs --build",
         "ne3-no": "pnpm build && nexe -o rardirj25.exe -i dist/all.mjs -t host --build",

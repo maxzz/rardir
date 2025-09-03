@@ -1,7 +1,7 @@
 import chalk from "node-chalk";
 import { newErrorArgs, exitProcess } from './utils/utils-errors.js';
 import { help } from './app-utils/app-help.js';
-import { StartArgs, getAndCheckArg, correctIfTopFolderWoFiles } from "./app-utils/1-args/index.js";
+import { StartArgs, getAndCheckArg, correctIfTopFolderWoFiles } from "./2-args";
 import { notes } from './app-utils/app-notes.js';
 import { handleFolder } from './1-app/0-all.js';
 import { createTmRarFromDroppedItems } from './app-utils/utils-rar.js';
