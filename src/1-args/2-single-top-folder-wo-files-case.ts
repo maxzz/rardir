@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { OsStuff } from "../../utils/utils-os.js";
+import { OsStuff } from "../utils/utils-os.js";
 import { StartArgs } from "./9-types.js";
 
 /**
