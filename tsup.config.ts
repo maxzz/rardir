@@ -5,7 +5,7 @@ export default defineConfig([
         entry: {
             rardir: 'src/index.ts',
         },
-        format: ['cjs'],
+        format: ['esm'],
         //noExternal: ['pm-manifest', '@pmac/template', 'fast-xml-parser'],
     },
 ]);
