@@ -36,6 +36,7 @@
         "nexe": "4.0.0-rc.6",
         "pkg": "^5.8.1",
         "rollup": "^4.17.2",
+        "tsup": "^8.5.0",
         "typescript": "^5.4.5"
     },
     "dependencies": {
