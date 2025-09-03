@@ -4,7 +4,10 @@ import { exitProcess } from "../utils/utils-errors";
 // import cfg from "../../package.json" assert { type: 'json' };
 
 //let cfg = require('../package.json');
-import cfg from "../../package.json";
+//import cfg from "../../package.json";
+
+import fs from 'fs';
+const cfg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 export const { name: programName } = cfg;
 

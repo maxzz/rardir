@@ -38,6 +38,7 @@
         "rollup": "^4.50.0",
         "ts-node": "^10.9.2",
         "tsup": "^8.5.0",
+        "tsx": "^4.20.5",
         "typescript": "^5.9.2"
     },
     "dependencies": {
