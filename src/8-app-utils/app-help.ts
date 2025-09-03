@@ -6,7 +6,7 @@ import chalk from "node-chalk";
 //let cfg = require('../package.json');
 
 import fs from 'fs';
-const cfg = JSON.parse(fs.readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
+const cfg = JSON.parse(fs.readFileSync(new URL('../../package.json', import.meta.url), 'utf8'));
 
 export const { name: programName } = cfg;
 

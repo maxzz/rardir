@@ -1,6 +1,6 @@
 import path from "path";
 import { OsStuff } from "../../utils/utils-os";
-import { AppUtils } from "../../app-utils/utils-dir";
+import { AppUtils } from "../../8-app-utils/utils-dir";
 import { groupByExt } from "./1-file-groups";
 import { isOurFolder } from "./2-is-our-folder";
 import { prepareShortFilenamesToRar } from "./3-prepare-short-filenames-to-rar";

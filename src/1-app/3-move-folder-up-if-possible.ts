@@ -1,6 +1,6 @@
 import { rimraf } from "rimraf";
 import { OsStuff } from "../utils/utils-os";
-import { notes } from "../app-utils/app-notes";
+import { notes } from "../8-app-utils/app-notes";
 
 export function moveFolderUpIfPossible(targetFolder: string) {
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
