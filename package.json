@@ -48,7 +48,8 @@
     },
     "scripts": {
         "tsc": "tsc -w",
-        "tt": "p ts-node src/index.ts --esm",
+        "t2": "p ts-node src/index.ts --esm",
+        "t3": "p tsx src/index.ts",
         "build": "pnpm tsup",
         "_build": "rm -rf dist && tsc && rollup -c",
         "_prepublish": "pnpm build",
