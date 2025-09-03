@@ -1,6 +1,6 @@
 import path from "path";
-import { OsStuff } from "../../utils/utils-os.js";
-import { fnames } from "../../app-utils/utils-app.js";
+import { OsStuff } from "../../utils/utils-os";
+import { fnames } from "../../app-utils/utils-app";
 
 export type FItem = OsStuff.FileItem & { ext: fnames.extType; };
 

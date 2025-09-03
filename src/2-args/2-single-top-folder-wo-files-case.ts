@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { OsStuff } from "../utils/utils-os.js";
-import { StartArgs } from "./9-types.js";
+import { OsStuff } from "../utils/utils-os";
+import { StartArgs } from "./9-types";
 
 /**
  * Special case: single top folder wo/ files inside.

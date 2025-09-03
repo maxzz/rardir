@@ -1,5 +1,5 @@
-import { notes } from "../../app-utils/app-notes.js";
-import { FileGroups } from "./1-file-groups.js";
+import { notes } from "../../app-utils/app-notes";
+import { FileGroups } from "./1-file-groups";
 
 /**
  * Check for combination: .url + [.mht] + .torrent + !tm.rar + ![<media files>] // mht is optional

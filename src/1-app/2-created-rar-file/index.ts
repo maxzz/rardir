@@ -1,9 +1,9 @@
 import path from "path";
-import { OsStuff } from "../../utils/utils-os.js";
-import { AppUtils } from "../../app-utils/utils-dir.js";
-import { groupByExt } from "./1-file-groups.js";
-import { isOurFolder } from "./2-is-our-folder.js";
-import { prepareShortFilenamesToRar } from "./3-prepare-short-filenames-to-rar.js";
+import { OsStuff } from "../../utils/utils-os";
+import { AppUtils } from "../../app-utils/utils-dir";
+import { groupByExt } from "./1-file-groups";
+import { isOurFolder } from "./2-is-our-folder";
+import { prepareShortFilenamesToRar } from "./3-prepare-short-filenames-to-rar";
 
 export function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.FolderItem): true | undefined {
 
