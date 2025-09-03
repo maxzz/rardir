@@ -1,6 +1,6 @@
 import path from "path";
 import minimist from "minimist";
-import { StartArgs } from "./9-types";
+import { type StartArgs } from "./9-types";
 import { exist, newArgsError } from "../8-utils";
 
 export function getAndCheckArg(): StartArgs {

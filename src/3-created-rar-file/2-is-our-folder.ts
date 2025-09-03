@@ -1,4 +1,4 @@
-import { notes } from "../8-app-utils";
+import { notes } from "../7-app-utils";
 import { FileGroups } from "./1-get-file-groups";
 
 /**

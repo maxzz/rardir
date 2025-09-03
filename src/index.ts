@@ -1,11 +1,11 @@
 import chalk from "node-chalk";
-import { help } from './8-app-utils/app-help';
+import { help } from './7-app-utils/app-help';
 import { newArgsError, exitProcess } from './8-utils/utils-errors';
 import { StartArgs, getAndCheckArg, correctIfTopFolderWoFiles } from "./2-args";
-import { notes } from './8-app-utils/app-notes';
-import { handleFolder } from './1-app/0-all';
-import { createTmRarFromDroppedItems } from './8-app-utils/utils-rar';
-import { AppUtils } from './8-app-utils/utils-dir';
+import { notes } from './7-app-utils/app-notes';
+import { handleFolder } from './1-app/0-all-handle-folder';
+import { createTmRarFromDroppedItems } from './7-app-utils/utils-rar';
+import { AppUtils } from './7-app-utils/utils-dir';
 
 async function main() {
     AppUtils.findWinrar();
