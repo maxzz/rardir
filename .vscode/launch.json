@@ -42,6 +42,18 @@
             ],
             "console": "externalTerminal",
             "outputCapture": "std"
-        }
+        },
+        {
+            "name": "ts-node tester",
+            "type": "node",
+            "request": "launch",
+            "runtimeArgs": [
+                "${workspaceRoot}/node_modules/ts-node/dist/bin.js"
+            ],
+            "args": [
+                "${workspaceRoot}/src/index.ts"
+            ],
+            "cwd": "${workspaceRoot}/src",
+        },
     ]
 }
