@@ -3,7 +3,8 @@ import { exitProcess } from "../utils/utils-errors";
 
 // import cfg from "../../package.json" assert { type: 'json' };
 
-let cfg = require('../package.json');
+//let cfg = require('../package.json');
+import cfg from "../../package.json";
 
 export const { name: programName } = cfg;
 
