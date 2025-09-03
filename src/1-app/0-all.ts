@@ -1,4 +1,4 @@
-import { OsStuff } from "../utils/utils-os";
+import { OsStuff } from "../8-utils/utils-os";
 import { moveFolderUpIfPossible } from "./3-move-folder-up-if-possible";
 import { createdRarFile } from "../3-created-rar-file/index";
 import { continueIfNoTmRar } from "./1-continue-if-no-tm-rar";

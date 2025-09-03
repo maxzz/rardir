@@ -1,4 +1,4 @@
-import { OsStuff } from "../utils/utils-os";
+import { OsStuff } from "../8-utils/utils-os";
 import { notes } from "../8-app-utils/app-notes";
 
 export function continueIfNoTmRar(targetFolder: string, files: OsStuff.FileItem[]): true | undefined {

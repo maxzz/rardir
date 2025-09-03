@@ -1,5 +1,5 @@
 import path from "path";
-import { OsStuff } from "../utils/utils-os";
+import { OsStuff } from "../8-utils/utils-os";
 import { AppUtils } from "../8-app-utils/utils-dir";
 import { getGroupByExt } from "./1-get-file-groups";
 import { isOurFolder } from "./2-is-our-folder";

@@ -1,8 +1,8 @@
 import path from "path";
 import minimist from "minimist";
-import { StartArgs } from "./9-types";
-import { exist } from "../8-utils/unique-names";
-import { newErrorArgs } from "../8-utils/utils-errors";
+import { type StartArgs } from "../2-args";
+import { exist } from "../8-utils/unique-names.js";
+import { newErrorArgs } from "../8-utils/utils-errors.js";
 
 export function getAndCheckArg(): StartArgs {
     // let args = require('minimist')(process.argv.slice(2), {

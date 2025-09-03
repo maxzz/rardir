@@ -1,5 +1,5 @@
 import path from "path";
-import { OsStuff } from "../utils/utils-os";
+import { OsStuff } from "../8-utils/utils-os";
 import { fnames } from "../8-app-utils/utils-app";
 
 export type FItem = OsStuff.FileItem & { ext: fnames.extType; };

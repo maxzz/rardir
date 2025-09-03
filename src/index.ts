@@ -1,6 +1,6 @@
 import chalk from "node-chalk";
 import { help } from './8-app-utils/app-help';
-import { newErrorArgs, exitProcess } from './utils/utils-errors';
+import { newErrorArgs, exitProcess } from './8-utils/utils-errors';
 import { StartArgs, getAndCheckArg, correctIfTopFolderWoFiles } from "./2-args";
 import { notes } from './8-app-utils/app-notes';
 import { handleFolder } from './1-app/0-all';
