@@ -27,6 +27,7 @@
             // Debug current file in VSCode
             "program": "${workspaceFolder}/src/index.ts",
             //"program": "${file}",
+            "args": ["C:/Users/maxzz/Desktop/1files"],
             /*
             * Path to tsx binary
             * Assuming locally installed

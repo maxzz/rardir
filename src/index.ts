@@ -8,7 +8,7 @@ import { createTmRarFromDroppedItems } from './7-app-utils/utils-rar';
 import { AppUtils } from './7-app-utils/utils-dir';
 
 async function main() {
-    AppUtils.findWinrar();
+     AppUtils.findWinrar();
 
     let targets: StartArgs = getAndCheckArg();
     targets = correctIfTopFolderWoFiles(targets);
@@ -36,7 +36,7 @@ async function main() {
 main().catch(async (error) => {
     error.args && help(); // Show help if arguments are invalid
     
-    const msg = chalk[error.args ? 'yellow' : 'red'](`\ntm:\n${error.message}`);
+    const msg = chalk[error.args ? 'yellow' : 'red'](`${error.args ? '':'\nrardir: '}${error.message}`);
     await exitProcess(1, `${notes.buildMessage()}${msg}`);
 });
 

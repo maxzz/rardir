@@ -36,9 +36,9 @@ export namespace AppUtils {
 
     export function findWinrar() {
         try {
-            WINRAR = execSync(`where winrar`).toString().split(/[\r\n]/)[0];
+            WINRAR = execSync(`where winrar.exe`).toString().split(/[\r\n]/)[0];
         } catch (error) {
-            throw new Error(`${error}\nMake path to winrar.exe as part of PATH`);
+            throw new Error('Cannot find winrar.exe. Add the path to winrar.exe to the system PATH variable.');
         }
     }
 
