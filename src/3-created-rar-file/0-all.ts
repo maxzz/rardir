@@ -20,7 +20,7 @@ export function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.Fo
     let fullNameRar = path.join(rootDir2Rar, 'tm.rar');
 
     AppUtils.execCmdDir(targetFolder);
-    AppUtils.createRarFile(fullNameRar, rootDir2Rar, shortFnamesToRar);
+    AppUtils.execWinRar(fullNameRar, rootDir2Rar, shortFnamesToRar);
 
     return true; // as continue
 }

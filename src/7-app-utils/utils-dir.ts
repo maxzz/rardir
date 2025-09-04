@@ -20,7 +20,7 @@ export namespace AppUtils {
 
     let WINRAR: string;
 
-    export function createRarFile(fullNameRar: string, baseFolderForShortNames: string, shortNamesToRar: string[]) {
+    export function execWinRar(fullNameRar: string, baseFolderForShortNames: string, shortNamesToRar: string[]) {
         if (!shortNamesToRar.length) {
             throw new Error(`No files to move into ${fullNameRar}`);
         }

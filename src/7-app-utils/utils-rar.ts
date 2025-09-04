@@ -21,7 +21,7 @@ export function createTmRarFromDroppedItems(filesToRar: string[], singleTm: bool
     AppUtils.execCmdDir(singleTm ? path.dirname(root) : root, root); // make dir on parent folder in singleTm case.
     files.push(AppUtils.fnameDirsTxt);
 
-    AppUtils.createRarFile(fnameRar, root, files);
+    AppUtils.execWinRar(fnameRar, root, files);
 
     // If we moved eveything inside tm.rar and parent folder name is 'tm' (and parent does not have tm.rar) then move tm.rar up and delete tm folder.
 
