@@ -1,44 +1,29 @@
 import chalk from "node-chalk";
-import { help } from './7-app-utils/app-help';
-import { newArgsError, exitProcess } from './8-utils/utils-errors';
+import { AppUtils, help, notes } from "./7-app-utils";
+import { exitProcess, newArgsError } from "./8-utils";
 import { StartArgs, getAndCheckArg, correctIfTopFolderWoFiles } from "./2-args";
-import { notes } from './7-app-utils/app-notes';
-import { handleFolder } from './1-app/0-all-handle-folder';
-import { createTmRarFromDroppedItems } from './7-app-utils/utils-rar';
-import { AppUtils } from './7-app-utils/utils-dir';
+import { processArgs } from "./1-app";
 
 async function main() {
-     AppUtils.findWinrar();
+    AppUtils.findWinrar();
 
     let targets: StartArgs = getAndCheckArg();
     targets = correctIfTopFolderWoFiles(targets);
 
-    // console.log(`targets ${JSON.stringify(targets, null, 4)}`);
-    // await exitProcess(0, '');
+    // console.log(`targets ${JSON.stringify(targets, null, 4)}`); await exitProcess(0, '');
 
-    if (targets.files.length) {
-        // 1. all mixed content goes to tm.rar (files and folders).
-        const toRar = [...targets.files, ...targets.dirs]; //TOOO: Check: all files and folders should be inside the same folder (although it isn't possible with drag&drop).
-        createTmRarFromDroppedItems(toRar, !!targets.singleTm);
-    }
-    else if (targets.dirs.length) {
-        // 2. treat each folder separately.
-        for (let dir of targets.dirs) {
-            handleFolder(dir);
-        }
-    } else {
+    if (!targets.files.length && !targets.dirs.length) {
         throw newArgsError(`Specify at leats one folder or file names to process.`);
     }
+
+    processArgs(targets);
 
     notes.show();
 }
 
 main().catch(async (error) => {
     error.args && help(); // Show help if arguments are invalid
-    
-    const msg = chalk[error.args ? 'yellow' : 'red'](`${error.args ? '':'\nrardir: '}${error.message}`);
+
+    const msg = chalk[error.args ? 'yellow' : 'red'](`${error.args ? '' : '\nrardir: '}${error.message}`);
     await exitProcess(1, `${notes.buildMessage()}${msg}`);
 });
-
-//TODO: add check on file size within createTmRarFromDroppedItems()
-//TODO: preform for multiple forders a single 'tm' folder check similar to createTmRarFromDroppedItems()

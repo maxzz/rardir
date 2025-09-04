@@ -1,7 +1,6 @@
 import path from "path";
 import { rimraf } from "rimraf";
-import { notes } from "./app-notes";
-import { AppUtils } from "./utils-dir";
+import { AppUtils, notes } from "../7-app-utils";
 import { exist, OsStuff } from "../8-utils";
 
 export function createTmRarFromDroppedItems(filesToRar: string[], singleTm: boolean): void {

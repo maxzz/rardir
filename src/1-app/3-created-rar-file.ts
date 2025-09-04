@@ -1,7 +1,6 @@
 import path from "path";
 import { OsStuff } from "../8-utils";
-import { AppUtils, notes } from "../7-app-utils";
-import { FileGroups, FItem, getGroupByExt } from "./1-get-file-groups";
+import { type FileGroups, type FItem, getGroupByExt, AppUtils, notes } from "../7-app-utils";
 
 export function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.FolderItem): true | undefined {
 

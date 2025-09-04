@@ -1,7 +1,7 @@
 import { notes } from "../7-app-utils";
 import { OsStuff } from "../8-utils";
-import { createdRarFile } from "../3-created-rar-file";
-import { moveFolderUpIfPossible } from "./3-move-folder-up-if-possible";
+import { createdRarFile } from "./3-created-rar-file";
+import { moveFolderUpIfPossible } from "../7-app-utils/3-move-folder-up-if-possible";
 
 /**
  * Check for combination: url + mht + torrent + !tm.rar + !<media files>

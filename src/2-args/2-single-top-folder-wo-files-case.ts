@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { type StartArgs } from "./9-types";
+import { type StartArgs } from "./9-types-arg";
 import { OsStuff } from "../8-utils";
 
 /**
