@@ -1,7 +1,7 @@
-import { notes } from "../7-app-utils";
+import { Notes } from "../7-app-utils";
 import { OsStuff } from "../8-utils";
 import { createdRarFile } from "./3-created-rar-file";
-import { moveFolderUpIfPossible } from "../7-app-utils/3-move-folder-up-if-possible";
+import { moveFolderUpIfPossible } from "../7-app-utils/4-move-folder-up-if-possible";
 
 /**
  * Check for combination: url + mht + torrent + !tm.rar + !<media files>
@@ -26,7 +26,7 @@ function continueIfNoTmRar(targetFolder: string, files: OsStuff.FileItem[]): tru
 
     let hasTmRar = files.find((fileItem: OsStuff.FileItem) => fileItem.short.toLowerCase() === 'tm.rar');
     if (hasTmRar) {
-        notes.addProcessed(`    ${targetFolder} <- skipped`);
+        Notes.addProcessed(`    ${targetFolder} <- skipped`);
         return;
     }
 

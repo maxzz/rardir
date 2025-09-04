@@ -1,6 +1,6 @@
 import { rimraf } from "rimraf";
 import { OsStuff } from "../8-utils";
-import { notes } from "./app-notes";
+import { addNote } from "./2-app-notes";
 
 export function moveFolderUpIfPossible(targetFolder: string) {
     // 5. We are done. If we have a single folder and one tm.rar then move sub-folder content up.
@@ -13,7 +13,7 @@ export function moveFolderUpIfPossible(targetFolder: string) {
 
             let hasDublicates = OsStuff.hasDuplicates(main, sub);
             if (hasDublicates) {
-                notes.add(`--- INFO: Not moving content up (folder a has some duplicated names from folder b)\n    a:${main.name}\n    b:${sub.name}`);
+                addNote(`--- INFO: Not moving content up (folder a has some duplicated names from folder b)\n    a:${main.name}\n    b:${sub.name}`);
                 return;
             }
 
@@ -21,14 +21,14 @@ export function moveFolderUpIfPossible(targetFolder: string) {
 
             let dirToRemove = sub.name;
             if (OsStuff.nDirent(dirToRemove)) {
-                notes.add(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${dirToRemove}`);
+                addNote(`--- INFO: Not deleting sub-folder (it is not empty after moving content up)\n    b:${dirToRemove}`);
                 return;
             }
 
             rimraf.sync(dirToRemove);
 
         } catch (error) { // We reported error already and interrupt for loop, but moving folder up is just for convenience.
-            notes.add(`--- Info: Failed to move up the folder content\n    ${error}`);
+            addNote(`--- Info: Failed to move up the folder content\n    ${error}`);
             //notes.add(`--- Info: Failed to move up the folder content\n    ${error}\n    Continue with the next commnad line params`);
         }
     }

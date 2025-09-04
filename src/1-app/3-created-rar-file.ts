@@ -1,6 +1,6 @@
 import path from "path";
 import { OsStuff } from "../8-utils";
-import { type FileGroups, type FItem, getGroupByExt, AppUtils, notes } from "../7-app-utils";
+import { type FileGroups, type FItem, getGroupByExt, AppUtils, Notes } from "../7-app-utils";
 
 export function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.FolderItem): true | undefined {
 
@@ -11,7 +11,7 @@ export function createdRarFile(targetFolder: string, filesAndFolders: OsStuff.Fo
     }
 
     const shortFnamesToRar = prepareShortFilenamesToRar(groups);
-    shortFnamesToRar.push(AppUtils.fnameDirsTxt);
+    shortFnamesToRar.push(AppUtils.filename_z_dirs_txt);
 
     // Create dirs.txt and tm.rar.
 
@@ -33,11 +33,11 @@ function isOurFolder(fileGroups: FileGroups, targetFolder: string): true | undef
 
     let ourFolder = tors.length && urls.length || mhts.length && urls.length;
     if (!ourFolder) {
-        notes.addProcessed(`    ${targetFolder} <- skipped`);
+        Notes.addProcessed(`    ${targetFolder} <- skipped`);
         return;
     }
 
-    notes.addProcessed(`    ${targetFolder}`);
+    Notes.addProcessed(`    ${targetFolder}`);
     return true; // as continue
 }
 

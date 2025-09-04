@@ -1,5 +1,5 @@
 import chalk from "node-chalk";
-import { AppUtils, help, notes } from "./7-app-utils";
+import { AppUtils, help, Notes } from "./7-app-utils";
 import { exitProcess, newArgsError } from "./8-utils";
 import { StartArgs, getAndCheckArg, correctIfTopFolderWoFiles } from "./2-args";
 import { processArgs } from "./1-app";
@@ -18,12 +18,12 @@ async function main() {
 
     processArgs(targets);
 
-    notes.show();
+    Notes.showAll();
 }
 
 main().catch(async (error) => {
     error.args && help(); // Show help if arguments are invalid
 
     const msg = chalk[error.args ? 'yellow' : 'red'](`${error.args ? '' : '\nrardir: '}${error.message}`);
-    await exitProcess(1, `${notes.buildMessage()}${msg}`);
+    await exitProcess(1, `${Notes.buildMessage()}${msg}`);
 });
